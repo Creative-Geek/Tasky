@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #6366f1;
+  --primary-hover: #4f46e5;
+  --secondary-color: #f3f4f6;
+  --text-color: #1f2937;
+  --bg-color: #f9fafb;
+  --card-color: #ffffff;
+  --border-color: #e5e7eb;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+
+  /* Auth form variables */
+  --auth-form-brand: var(--primary-color);
+  --auth-form-brand-accent: var(--primary-hover);
+  --auth-form-submit-button-text-color: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-800;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-500 hover:bg-indigo-600 text-white focus:ring-indigo-500;
+  }
+
+  .btn-danger {
+    @apply bg-red-500 hover:bg-red-600 text-white focus:ring-red-500;
+  }
+
+  .input {
+    @apply px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow border border-gray-100 overflow-hidden;
+  }
+}
