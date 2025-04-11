@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   useQuery,
   useAction,
@@ -8,34 +8,167 @@ import {
   deleteTask,
   reorderTasks,
 } from "wasp/client/operations";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   PlusIcon,
   TrashIcon,
   CheckCircleIcon,
-  XCircleIcon,
   PencilIcon,
   ArrowsUpDownIcon,
 } from "@heroicons/react/24/outline";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-// A workaround for React.StrictMode in React 18 with react-beautiful-dnd
-// This fixes issues with drag and drop not working
-const useDndSafeRender = () => {
-  const [enabled, setEnabled] = useState(false);
+// Sortable task item component
+const SortableTaskItem = ({
+  task,
+  handleToggleTask,
+  startEditing,
+  handleDeleteTask,
+  editingTask,
+  setEditingTask,
+  saveEdit,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id.toString(),
+  });
 
-  useEffect(() => {
-    const animation = requestAnimationFrame(() => setEnabled(true));
-    return () => {
-      cancelAnimationFrame(animation);
-      setEnabled(false);
-    };
-  }, []);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
+  };
 
-  return enabled;
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`card p-4 transition-all ${
+        task.isDone ? "bg-gray-50 border-gray-200" : ""
+      }`}
+    >
+      {editingTask && editingTask.id === task.id ? (
+        // Edit mode
+        <div className="space-y-2">
+          <input
+            type="text"
+            className="input w-full"
+            value={editingTask.title}
+            onChange={(e) =>
+              setEditingTask({
+                ...editingTask,
+                title: e.target.value,
+              })
+            }
+          />
+          <textarea
+            className="input w-full min-h-[60px]"
+            value={editingTask.description}
+            onChange={(e) =>
+              setEditingTask({
+                ...editingTask,
+                description: e.target.value,
+              })
+            }
+          />
+          <div className="flex justify-end mt-2 space-x-2">
+            <button
+              onClick={() => setEditingTask(null)}
+              className="btn bg-gray-200 hover:bg-gray-300 text-gray-700"
+            >
+              Cancel
+            </button>
+            <button onClick={saveEdit} className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        // View mode
+        <div>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <button
+                onClick={() => handleToggleTask(task)}
+                className="mt-1 flex-shrink-0"
+              >
+                {task.isDone ? (
+                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                ) : (
+                  <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500" />
+                )}
+              </button>
+              <div>
+                <h3
+                  className={`text-lg font-medium ${
+                    task.isDone ? "text-gray-500 line-through" : "text-gray-800"
+                  }`}
+                >
+                  {task.title}
+                </h3>
+                {task.description && (
+                  <p
+                    className={`mt-1 text-sm ${
+                      task.isDone ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {task.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex space-x-1">
+              <div
+                {...attributes}
+                {...listeners}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move"
+              >
+                <ArrowsUpDownIcon className="h-5 w-5" />
+              </div>
+
+              <button
+                onClick={() => startEditing(task)}
+                className="p-1 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-gray-100"
+              >
+                <PencilIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => handleDeleteTask(task.id)}
+                className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
+              >
+                <TrashIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const MainPage = () => {
-  const isDndEnabled = useDndSafeRender();
   const { data: tasks = [], isLoading, error } = useQuery(getTasks);
   const createTaskFn = useAction(createTask);
   const updateTaskFn = useAction(updateTask);
@@ -44,6 +177,18 @@ const MainPage = () => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [editingTask, setEditingTask] = useState(null);
+
+  // Set up dnd-kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement required before activation
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   if (isLoading)
     return (
@@ -99,21 +244,26 @@ const MainPage = () => {
     }
   };
 
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
 
-    // Create a new array from the current tasks
-    const items = Array.from(tasks);
-    // Remove the dragged item from its position
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    // Insert the dragged item at the new position
-    items.splice(result.destination.index, 0, reorderedItem);
+    if (over && active.id !== over.id) {
+      // Map the tasks to their IDs
+      const activeIndex = tasks.findIndex(
+        (task) => task.id.toString() === active.id
+      );
+      const overIndex = tasks.findIndex(
+        (task) => task.id.toString() === over.id
+      );
 
-    // Extract the IDs in the new order
-    const reorderedTaskIds = items.map((task) => task.id);
+      // Create the new task order
+      const newTasksOrder = arrayMove(tasks, activeIndex, overIndex);
 
-    // Call the server action to update positions
-    reorderTasksFn({ taskIds: reorderedTaskIds });
+      // Update the server with the new order
+      reorderTasksFn({
+        taskIds: newTasksOrder.map((task) => task.id),
+      });
+    }
   };
 
   return (
@@ -166,139 +316,31 @@ const MainPage = () => {
           </p>
         </div>
       ) : (
-        isDndEnabled && (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="tasks">
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="space-y-3"
-                >
-                  {tasks.map((task, index) => (
-                    <Draggable
-                      key={task.id}
-                      draggableId={`task-${task.id}`}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`card p-4 transition-all ${
-                            task.isDone ? "bg-gray-50 border-gray-200" : ""
-                          }`}
-                        >
-                          {editingTask && editingTask.id === task.id ? (
-                            <div className="space-y-2">
-                              <input
-                                type="text"
-                                className="input w-full"
-                                value={editingTask.title}
-                                onChange={(e) =>
-                                  setEditingTask({
-                                    ...editingTask,
-                                    title: e.target.value,
-                                  })
-                                }
-                              />
-                              <textarea
-                                className="input w-full min-h-[60px]"
-                                value={editingTask.description}
-                                onChange={(e) =>
-                                  setEditingTask({
-                                    ...editingTask,
-                                    description: e.target.value,
-                                  })
-                                }
-                              />
-                              <div className="flex justify-end mt-2 space-x-2">
-                                <button
-                                  onClick={() => setEditingTask(null)}
-                                  className="btn bg-gray-200 hover:bg-gray-300 text-gray-700"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={saveEdit}
-                                  className="btn btn-primary"
-                                >
-                                  Save
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div>
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-start space-x-3">
-                                  <button
-                                    onClick={() => handleToggleTask(task)}
-                                    className="mt-1 flex-shrink-0"
-                                  >
-                                    {task.isDone ? (
-                                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                                    ) : (
-                                      <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500" />
-                                    )}
-                                  </button>
-                                  <div>
-                                    <h3
-                                      className={`text-lg font-medium ${
-                                        task.isDone
-                                          ? "text-gray-500 line-through"
-                                          : "text-gray-800"
-                                      }`}
-                                    >
-                                      {task.title}
-                                    </h3>
-                                    {task.description && (
-                                      <p
-                                        className={`mt-1 text-sm ${
-                                          task.isDone
-                                            ? "text-gray-400"
-                                            : "text-gray-600"
-                                        }`}
-                                      >
-                                        {task.description}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex space-x-1">
-                                  <div
-                                    {...provided.dragHandleProps}
-                                    className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move"
-                                  >
-                                    <ArrowsUpDownIcon className="h-5 w-5" />
-                                  </div>
-
-                                  <button
-                                    onClick={() => startEditing(task)}
-                                    className="p-1 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-gray-100"
-                                  >
-                                    <PencilIcon className="h-5 w-5" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteTask(task.id)}
-                                    className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
-                                  >
-                                    <TrashIcon className="h-5 w-5" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        )
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={tasks.map((task) => task.id.toString())}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-3">
+              {tasks.map((task) => (
+                <SortableTaskItem
+                  key={task.id}
+                  task={task}
+                  handleToggleTask={handleToggleTask}
+                  startEditing={startEditing}
+                  handleDeleteTask={handleDeleteTask}
+                  editingTask={editingTask}
+                  setEditingTask={setEditingTask}
+                  saveEdit={saveEdit}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
