@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   useQuery,
   useAction,
@@ -169,7 +169,18 @@ const SortableTaskItem = ({
 };
 
 const MainPage = () => {
-  const { data: tasks = [], isLoading, error } = useQuery(getTasks);
+  const { data: queryTasks = [], isLoading, error } = useQuery(getTasks);
+
+  // Local state for tasks that can be updated immediately during drag
+  const [localTasks, setLocalTasks] = useState([]);
+
+  // Sync local tasks with query results when they change
+  useEffect(() => {
+    if (queryTasks.length > 0) {
+      setLocalTasks(queryTasks);
+    }
+  }, [queryTasks]);
+
   const createTaskFn = useAction(createTask);
   const updateTaskFn = useAction(updateTask);
   const deleteTaskFn = useAction(deleteTask);
@@ -212,16 +223,28 @@ const MainPage = () => {
 
   const handleCreateTask = () => {
     if (newTaskTitle.trim() === "") return;
-    createTaskFn({ title: newTaskTitle, description: newTaskDescription });
-    setNewTaskTitle("");
-    setNewTaskDescription("");
+    createTaskFn({ title: newTaskTitle, description: newTaskDescription }).then(
+      (newTask) => {
+        // Add the new task to local state
+        setLocalTasks([...localTasks, newTask]);
+        setNewTaskTitle("");
+        setNewTaskDescription("");
+      }
+    );
   };
 
   const handleToggleTask = (task) => {
+    const updatedTask = { ...task, isDone: !task.isDone };
+    // Optimistically update the UI
+    setLocalTasks(localTasks.map((t) => (t.id === task.id ? updatedTask : t)));
+    // Send update to server
     updateTaskFn({ id: task.id, isDone: !task.isDone });
   };
 
   const handleDeleteTask = (id) => {
+    // Optimistically update the UI
+    setLocalTasks(localTasks.filter((task) => task.id !== id));
+    // Send delete to server
     deleteTaskFn({ id });
   };
 
@@ -235,11 +258,26 @@ const MainPage = () => {
 
   const saveEdit = () => {
     if (editingTask) {
+      const updatedTask = {
+        ...localTasks.find((t) => t.id === editingTask.id),
+        title: editingTask.title,
+        description: editingTask.description,
+      };
+
+      // Optimistically update the UI
+      setLocalTasks(
+        localTasks.map((task) =>
+          task.id === editingTask.id ? updatedTask : task
+        )
+      );
+
+      // Send update to server
       updateTaskFn({
         id: editingTask.id,
         title: editingTask.title,
         description: editingTask.description,
       });
+
       setEditingTask(null);
     }
   };
@@ -249,15 +287,18 @@ const MainPage = () => {
 
     if (over && active.id !== over.id) {
       // Map the tasks to their IDs
-      const activeIndex = tasks.findIndex(
+      const activeIndex = localTasks.findIndex(
         (task) => task.id.toString() === active.id
       );
-      const overIndex = tasks.findIndex(
+      const overIndex = localTasks.findIndex(
         (task) => task.id.toString() === over.id
       );
 
       // Create the new task order
-      const newTasksOrder = arrayMove(tasks, activeIndex, overIndex);
+      const newTasksOrder = arrayMove(localTasks, activeIndex, overIndex);
+
+      // Immediately update the UI with the new order
+      setLocalTasks(newTasksOrder);
 
       // Update the server with the new order
       reorderTasksFn({
@@ -309,7 +350,7 @@ const MainPage = () => {
         </div>
       </div>
 
-      {tasks.length === 0 ? (
+      {localTasks.length === 0 ? (
         <div className="card p-8 text-center">
           <p className="text-gray-500">
             No tasks yet. Add your first task above!
@@ -322,11 +363,11 @@ const MainPage = () => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={tasks.map((task) => task.id.toString())}
+            items={localTasks.map((task) => task.id.toString())}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-3">
-              {tasks.map((task) => (
+              {localTasks.map((task) => (
                 <SortableTaskItem
                   key={task.id}
                   task={task}
