@@ -10,16 +10,16 @@ generator client {
 }
 
 model User {
-    id    Int    @id @default(autoincrement())
-    tasks Task[]
+  id    Int    @id @default(autoincrement())
+  tasks Task[]
 }
 
 model Task {
-    id          Int     @id @default(autoincrement())
-    title       String
-    description String?
-    isDone      Boolean @default(false)
-    position    Int
-    user        User    @relation(fields: [userId], references: [id])
-    userId      Int
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  isDone      Boolean @default(false)
+  position    Int
+  user        User    @relation(fields: [userId], references: [id])
+  userId      Int
 }
