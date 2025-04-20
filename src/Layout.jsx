@@ -3,12 +3,18 @@ import { useAuth, logout } from "wasp/client/auth";
 import { Outlet } from "react-router-dom";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { generateFavicon } from "./favicon";
 import "./Main.css";
 
 export const Layout = () => {
   const { data: user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Generate favicon when component mounts
+  useEffect(() => {
+    generateFavicon();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
