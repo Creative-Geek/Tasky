@@ -1,4 +1,4 @@
-# TaskMaster
+# Tasky
 
 A simple yet effective task management application built with the Wasp full-stack framework.
 
