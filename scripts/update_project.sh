@@ -12,7 +12,7 @@ BACKEND_REPO_DIR="$HOME/Documents/Tasky-Backend" # Updated backend folder name
 SCRIPT_DIR="$MAIN_DIR/scripts"
 FRONTEND_BUILD_REL=".wasp/build/web-app"
 FRONTEND_BUILD_PATH="$MAIN_DIR/$FRONTEND_BUILD_REL"
-FRONTEND_PROJECT_NAME="Tasky" # Hardcoded frontend project name
+FRONTEND_PROJECT_NAME="tasky" # Hardcoded frontend project name
 # ===================================================
 
 # ----------- Usage and input checks -----------
