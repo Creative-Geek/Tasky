@@ -24,7 +24,7 @@ export const Layout = () => {
             <div className="h-8 w-8 bg-indigo-500 rounded-md flex items-center justify-center">
               <span className="text-white font-bold">T</span>
             </div>
-            <h1 className="text-xl font-semibold text-gray-800">TaskMaster</h1>
+            <h1 className="text-xl font-semibold text-gray-800">Tasky</h1>
           </Link>
 
           {/* Mobile menu button */}
@@ -97,7 +97,7 @@ export const Layout = () => {
       <footer className="border-t border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4 text-center">
           <p className="text-gray-500 text-sm mb-2">
-            TaskMaster — Powered by Wasp
+            Tasky — Powered by Wasp
           </p>
           <a
             href="https://github.com/Creative-Geek/Task-Master"

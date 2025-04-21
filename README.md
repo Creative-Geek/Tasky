@@ -31,8 +31,8 @@ A simple yet effective task management application built with the Wasp full-stac
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
-    cd Task-Master
+    git clone https://github.com/Creative-Geek/Tasky
+    cd Tasky
     ```
 
 2.  **Install dependencies:**

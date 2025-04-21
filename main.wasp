@@ -1,8 +1,8 @@
-app BasicTodoApp {
+app Tasky {
   wasp: {
     version: "^0.16.3"
   },
-  title: "Task Master",
+  title: "Tasky",
   client: {
     rootComponent: import { Layout } from "@src/Layout.jsx",
   },

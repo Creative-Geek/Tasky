@@ -1,5 +1,5 @@
 {
-  "name": "BasicTodoApp",
+  "name": "Tasky",
   "type": "module",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
