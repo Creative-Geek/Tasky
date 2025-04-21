@@ -100,7 +100,7 @@ export const Layout = () => {
             Tasky — Powered by Wasp
           </p>
           <a
-            href="https://github.com/Creative-Geek/Task-Master"
+            href="https://github.com/Creative-Geek/Tasky"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block text-gray-400 hover:text-gray-600 transition-colors"
