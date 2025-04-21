@@ -1,25 +1,34 @@
 #!/bin/bash
 
 # update_project.sh
-# Usage: ./update_project.sh BACKEND_URL FRONTEND_PROJECT_NAME
+# Usage: ./update_project.sh [BACKEND_URL]
+# If BACKEND_URL is not provided, it will try to use the TASKY_BACKEND_URL environment variable.
 
 set -e  # Exit script if a command fails (except in explicitly caught situations)
 
 # ========= CONFIG (adjust these as needed) ==========
-MAIN_DIR="$HOME/Documents/Task-Master"
-BACKEND_REPO_DIR="$HOME/Documents/TaskMaster-Backend"
+MAIN_DIR="$HOME/Documents/Tasky" # Updated project name
+BACKEND_REPO_DIR="$HOME/Documents/Tasky-Backend" # Updated backend folder name
 SCRIPT_DIR="$MAIN_DIR/scripts"
 FRONTEND_BUILD_REL=".wasp/build/web-app"
 FRONTEND_BUILD_PATH="$MAIN_DIR/$FRONTEND_BUILD_REL"
+FRONTEND_PROJECT_NAME="Tasky" # Hardcoded frontend project name
 # ===================================================
 
 # ----------- Usage and input checks -----------
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <BACKEND_URL> <FRONTEND_PROJECT_NAME>"
+# Check if URL argument is provided
+if [ $# -eq 1 ]; then
+  BACKEND_URL="$1"
+# Check if environment variable is set and no argument is provided
+elif [ -z "$1" ] && [ -n "$TASKY_BACKEND_URL" ]; then
+  BACKEND_URL="$TASKY_BACKEND_URL"
+  echo "Using TASKY_BACKEND_URL environment variable."
+# If neither is provided, show usage and exit
+else
+  echo "Usage: $0 [BACKEND_URL]"
+  echo "Alternatively, set the TASKY_BACKEND_URL environment variable."
   exit 1
 fi
-BACKEND_URL="$1"
-FRONTEND_PROJECT_NAME="$2"
 
 echo "Backend URL: $BACKEND_URL"
 echo "Frontend Wrangler project: $FRONTEND_PROJECT_NAME"
@@ -75,13 +84,9 @@ fi
 # ----------- FRONTEND DEPLOY WITH WRANGLER -----------
 echo "==== Deploying frontend with wrangler ===="
 
-# Check if wrangler is logged in
-# if ! npx wrangler whoami > /dev/null 2>&1; then
-#   echo "Wrangler not logged in! Please run: npx wrangler login"
-#   exit 1
-# fi
+# Removed wrangler login check
 
-# Check if project exists (wrangler projects list is beta, so fallback to a test deploy with wrong project)
+# Check if project exists
 if ! npx wrangler pages project list | grep -q "$FRONTEND_PROJECT_NAME"; then
   echo "Wrangler project '$FRONTEND_PROJECT_NAME' does not exist."
   echo "Go to https://dash.cloudflare.com/ -> Pages, and create the project named '$FRONTEND_PROJECT_NAME', then retry."
