@@ -76,10 +76,10 @@ fi
 echo "==== Deploying frontend with wrangler ===="
 
 # Check if wrangler is logged in
-if ! npx wrangler whoami > /dev/null 2>&1; then
-  echo "Wrangler not logged in! Please run: npx wrangler login"
-  exit 1
-fi
+# if ! npx wrangler whoami > /dev/null 2>&1; then
+#   echo "Wrangler not logged in! Please run: npx wrangler login"
+#   exit 1
+# fi
 
 # Check if project exists (wrangler projects list is beta, so fallback to a test deploy with wrong project)
 if ! npx wrangler pages project list | grep -q "$FRONTEND_PROJECT_NAME"; then
