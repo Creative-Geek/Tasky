@@ -45,4 +45,9 @@
   .card {
     @apply bg-white rounded-lg shadow border border-gray-100 overflow-hidden;
   }
+
+  /* Simple touch handling for drag and drop */
+  .cursor-move {
+    touch-action: none;
+  }
 }

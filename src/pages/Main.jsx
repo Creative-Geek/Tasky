@@ -20,6 +20,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -55,7 +56,7 @@ const SortableTaskItem = ({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: 'transform 0ms', // Direct cursor following with no delay
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : 1,
   };
@@ -193,8 +194,9 @@ const MainPage = () => {
   // Set up dnd-kit sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
+      // Minimal activation constraint for better response
       activationConstraint: {
-        distance: 8, // 8px of movement required before activation
+        distance: 3, // Very small distance required to start dragging
       },
     }),
     useSensor(KeyboardSensor, {
