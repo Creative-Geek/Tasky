@@ -1,8 +1,30 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "wasp/client/router";
-import { LoginForm } from "wasp/client/auth";
+import { useNavigate } from "react-router-dom";
+import { LoginForm, useAuth } from "wasp/client/auth";
 
 export default function Login() {
+  const { data: user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to home page if user is already logged in
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/');
+    }
+  }, [user, isLoading, navigate]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="w-full h-full">
+        <div className="min-w-full min-h-[75vh] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full">
       <div className="min-w-full min-h-[75vh] flex items-center justify-center">
