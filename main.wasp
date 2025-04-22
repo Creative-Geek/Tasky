@@ -12,7 +12,9 @@ app Tasky {
       usernameAndPassword: {}
     },
     onAuthFailedRedirectTo: "/login",
-    onAuthSucceededRedirectTo: "/"
+    onAuthSucceededRedirectTo: "/",
+    // Register the hook
+    onBeforeSignup: import { onBeforeSignup } from "@src/auth/hooks.js"
   },
   
 }
