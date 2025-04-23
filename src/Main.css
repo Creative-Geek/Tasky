@@ -110,6 +110,20 @@
     }
   }
 
+  @keyframes undraw-checkmark {
+    0% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    100% {
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+  }
+
   @keyframes fill-checkmark {
     0%,
     10% {
@@ -117,6 +131,15 @@
     }
     100% {
       opacity: 1;
+    }
+  }
+
+  @keyframes unfill-checkmark {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
     }
   }
 
@@ -129,9 +152,24 @@
     }
   }
 
+  @keyframes unstrikethrough {
+    0% {
+      width: 100%;
+      opacity: 1;
+    }
+    100% {
+      width: 0;
+      opacity: 1;
+    }
+  }
+
   .checkmark-animation {
     animation: draw-checkmark 0.5s ease forwards,
       fill-checkmark 0.3s ease-in-out 0.4s forwards;
+  }
+
+  .uncheckmark-animation {
+    animation: undraw-checkmark 0.6s ease-in-out forwards;
   }
 
   .strikethrough-animation {
@@ -150,5 +188,24 @@
     animation: strikethrough 0.4s ease-out 0.2s forwards;
     transform: translateY(-50%);
     pointer-events: none;
+  }
+
+  .unstrikethrough-animation {
+    position: relative;
+    display: inline-block;
+  }
+
+  .unstrikethrough-animation::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 0.5px;
+    background-color: currentColor;
+    animation: unstrikethrough 0.5s ease-in-out forwards;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transform-origin: left center;
   }
 }

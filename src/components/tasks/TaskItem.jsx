@@ -22,6 +22,7 @@ const TaskItem = ({
   const nodeRef = React.useRef(null);
   const [editTitleError, setEditTitleError] = useState(false);
   const [isCompletingTask, setIsCompletingTask] = useState(false);
+  const [isUncompletingTask, setIsUncompletingTask] = useState(false);
 
   const {
     attributes,
@@ -77,17 +78,30 @@ const TaskItem = ({
     zIndex: isDragging ? 10 : 1,
   };
 
-  // Handle task completion with animation
+  // Handle task completion/uncompletion with animation
   const handleTaskCompletion = () => {
     if (!task.isDone) {
-      // Only animate when marking as complete, not when unchecking
+      // Animate when marking as complete
       setIsCompletingTask(true);
       // Reset the animation state after animations complete
       setTimeout(() => {
         setIsCompletingTask(false);
-      }, 800); // Slightly longer than all animations combined
+      }, 900); // Slightly longer than all animations combined
+    } else {
+      // Animate when unchecking
+      setIsUncompletingTask(true);
+      // Call the original toggle function after a slight delay
+      // to ensure the animation plays before the state changes
+      setTimeout(() => {
+        handleToggleTask(task);
+        // Reset the animation state after animations complete
+        setTimeout(() => {
+          setIsUncompletingTask(false);
+        }, 100);
+      }, 600);
+      return; // Don't call handleToggleTask immediately
     }
-    // Call the original toggle function
+    // Call the original toggle function immediately for completion
     handleToggleTask(task);
   };
 
@@ -106,7 +120,7 @@ const TaskItem = ({
       style={style}
       data-dragging={isDragging}
       data-any-dragging={isAnyItemDragging ? "true" : "false"}
-      className={`card p-4 transition-all ${
+      className={`card p-4 transition-colors ${
         task.isDone ? "bg-gray-50 border-gray-200" : ""
       } ${isNewTask ? "new-task-animation" : ""}`}
     >
@@ -129,8 +143,12 @@ const TaskItem = ({
               >
                 {task.isDone ? (
                   <svg
-                    className={`h-5 w-5 text-green-500 transition-all ${
-                      isCompletingTask ? "checkmark-animation" : ""
+                    className={`h-5 w-5 text-green-500 ${
+                      isCompletingTask
+                        ? "checkmark-animation"
+                        : isUncompletingTask
+                        ? "uncheckmark-animation"
+                        : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -138,7 +156,13 @@ const TaskItem = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={isCompletingTask ? { strokeDasharray: "100" } : {}}
+                    style={
+                      isCompletingTask
+                        ? { strokeDasharray: "100" }
+                        : isUncompletingTask
+                        ? { strokeDasharray: "100" }
+                        : {}
+                    }
                   >
                     <circle cx="12" cy="12" r="10" />
                     <path d="M8 12l3 3 6-6" />
@@ -159,6 +183,8 @@ const TaskItem = ({
                       className={
                         isCompletingTask
                           ? "strikethrough-animation"
+                          : isUncompletingTask
+                          ? "unstrikethrough-animation"
                           : "line-through"
                       }
                     >
