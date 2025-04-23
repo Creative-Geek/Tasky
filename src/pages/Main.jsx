@@ -34,8 +34,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 // Constants for input validation
-const MAX_TITLE_LENGTH = 100;
-const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_TITLE_LENGTH = 78;
+const MAX_DESCRIPTION_LENGTH = 600;
 
 // Sortable task item component
 const SortableTaskItem = ({

@@ -1,8 +1,8 @@
 import { HttpError } from "wasp/server";
 
 // Constants for input validation
-const MAX_TITLE_LENGTH = 100;
-const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_TITLE_LENGTH = 78;
+const MAX_DESCRIPTION_LENGTH = 600;
 
 export const createTask = async (args, context) => {
   if (!context.user) {
