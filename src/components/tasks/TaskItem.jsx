@@ -129,7 +129,7 @@ const TaskItem = ({
               >
                 {task.isDone ? (
                   <svg
-                    className={`h-5 w-5 text-green-500 ${
+                    className={`h-5 w-5 text-green-500 transition-all ${
                       isCompletingTask ? "checkmark-animation" : ""
                     }`}
                     viewBox="0 0 24 24"
@@ -144,13 +144,13 @@ const TaskItem = ({
                     <path d="M8 12l3 3 6-6" />
                   </svg>
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500" />
+                  <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500 transition-colors" />
                 )}
               </button>
               <div className="min-w-0 flex-grow overflow-hidden">
                 <h3
                   dir="auto"
-                  className={`text-lg font-medium break-words overflow-hidden ${
+                  className={`text-lg font-medium break-words overflow-hidden transition-all ${
                     task.isDone ? "text-gray-500" : "text-gray-800"
                   }`}
                 >
@@ -171,7 +171,7 @@ const TaskItem = ({
                 {task.description && (
                   <p
                     dir="auto"
-                    className={`mt-1 text-sm break-words overflow-hidden ${
+                    className={`mt-1 text-sm break-words overflow-hidden transition-colors ${
                       task.isDone ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
@@ -185,20 +185,20 @@ const TaskItem = ({
               <div
                 {...attributes}
                 {...listeners}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move"
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move transition-colors"
               >
                 <ArrowsUpDownIcon className="h-5 w-5" />
               </div>
 
               <button
                 onClick={() => startEditing(task)}
-                className="p-1 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-gray-100"
+                className="p-1 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <PencilIcon className="h-5 w-5" />
               </button>
               <button
                 onClick={() => handleDeleteTask(task.id)}
-                className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
+                className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <TrashIcon className="h-5 w-5" />
               </button>

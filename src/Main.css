@@ -145,7 +145,7 @@
     top: 50%;
     left: 0;
     width: 0;
-    height: 1px;
+    height: 0.5px;
     background-color: currentColor;
     animation: strikethrough 0.4s ease-out 0.2s forwards;
     transform: translateY(-50%);
