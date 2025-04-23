@@ -81,4 +81,20 @@
   [data-any-dragging="true"]:not([data-dragging="true"]) {
     transition: transform 250ms cubic-bezier(0.2, 0, 0, 1) !important;
   }
+
+  /* Animation for new tasks */
+  @keyframes slide-in-from-top {
+    0% {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .new-task-animation {
+    animation: slide-in-from-top 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
 }

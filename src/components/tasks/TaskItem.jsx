@@ -18,6 +18,7 @@ const TaskItem = ({
   setEditingTask,
   saveEdit,
   activeId,
+  isNewTask,
 }) => {
   const nodeRef = React.useRef(null);
 
@@ -83,10 +84,10 @@ const TaskItem = ({
       data-any-dragging={isAnyItemDragging ? "true" : "false"}
       className={`card p-4 transition-all ${
         task.isDone ? "bg-gray-50 border-gray-200" : ""
-      }`}
+      } ${isNewTask ? "new-task-animation" : ""}`}
     >
       {editingTask && editingTask.id === task.id ? (
-        <TaskEditForm 
+        <TaskEditForm
           editingTask={editingTask}
           setEditingTask={setEditingTask}
           saveEdit={saveEdit}

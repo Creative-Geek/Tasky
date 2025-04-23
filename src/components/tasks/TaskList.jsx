@@ -27,6 +27,7 @@ const TaskList = ({
   handleDragEnd,
   activeId,
   setActiveId,
+  newTaskId,
 }) => {
   // Set up dnd-kit sensors
   const sensors = useSensors(
@@ -88,6 +89,7 @@ const TaskList = ({
                   setEditingTask={setEditingTask}
                   saveEdit={saveEdit}
                   activeId={activeId}
+                  isNewTask={newTaskId === task.id}
                 />
               ))}
             </div>

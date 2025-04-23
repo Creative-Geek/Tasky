@@ -23,6 +23,8 @@ const MainPage = () => {
   const [localTasks, setLocalTasks] = useState([]);
   // Track the currently dragged task ID
   const [activeId, setActiveId] = useState(null);
+  // Track newly created task for animation
+  const [newTaskId, setNewTaskId] = useState(null);
 
   // Sync local tasks with query results when they change
   useEffect(() => {
@@ -30,6 +32,16 @@ const MainPage = () => {
       setLocalTasks(queryTasks);
     }
   }, [queryTasks]);
+
+  // Effect to clear the new task ID after animation completes
+  useEffect(() => {
+    if (newTaskId) {
+      const timer = setTimeout(() => {
+        setNewTaskId(null);
+      }, 500); // Slightly longer than animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [newTaskId]);
 
   const createTaskFn = useAction(createTask);
   const updateTaskFn = useAction(updateTask);
@@ -59,6 +71,8 @@ const MainPage = () => {
       .then((newTask) => {
         // Add the new task to the top of the list
         setLocalTasks([newTask, ...localTasks]);
+        // Set the new task ID for animation
+        setNewTaskId(newTask.id);
         setNewTaskTitle("");
         setNewTaskDescription("");
       })
@@ -167,6 +181,7 @@ const MainPage = () => {
         handleDragEnd={handleDragEnd}
         activeId={activeId}
         setActiveId={setActiveId}
+        newTaskId={newTaskId}
       />
     </div>
   );
