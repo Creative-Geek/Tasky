@@ -69,5 +69,16 @@
     box-sizing: border-box !important;
     height: auto !important;
     flex-shrink: 0 !important;
+    transition: none !important; /* Ensure no transition delay for dragged item */
+  }
+
+  /* Smooth animation for items being repositioned */
+  .card {
+    will-change: transform; /* Optimize for animations */
+  }
+
+  /* Apply smooth transitions to non-dragged items when something is being dragged */
+  [data-any-dragging="true"]:not([data-dragging="true"]) {
+    transition: transform 250ms cubic-bezier(0.2, 0, 0, 1) !important;
   }
 }

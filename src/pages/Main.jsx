@@ -46,6 +46,7 @@ const SortableTaskItem = ({
   editingTask,
   setEditingTask,
   saveEdit,
+  activeId,
 }) => {
   const nodeRef = React.useRef(null);
 
@@ -85,11 +86,21 @@ const SortableTaskItem = ({
     }
   }, [transform, isDragging]);
 
+  // Determine if this is the active item being dragged
+  const isActiveItem = isDragging;
+  // Determine if any item is being dragged (but not this one)
+  const isAnyItemDragging = activeId !== null;
+
   const style = {
     // Only apply transform through style when not dragging
     // When dragging, we'll use CSS variables and custom CSS
     transform: isDragging ? undefined : CSS.Transform.toString(transform),
-    transition: "transform 0ms", // Direct cursor following with no delay
+    // Use different transition styles based on whether this item is being dragged
+    transition: isActiveItem
+      ? "transform 0ms" // Direct cursor following with no delay for the dragged item
+      : isAnyItemDragging
+      ? "transform 250ms cubic-bezier(0.2, 0, 0, 1)" // Smooth animation for other items when something is being dragged
+      : "transform 0ms", // No transition when nothing is being dragged
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : 1,
   };
@@ -99,6 +110,7 @@ const SortableTaskItem = ({
       ref={setNodeRef}
       style={style}
       data-dragging={isDragging}
+      data-any-dragging={isAnyItemDragging ? "true" : "false"}
       className={`card p-4 transition-all ${
         task.isDone ? "bg-gray-50 border-gray-200" : ""
       }`}
@@ -223,6 +235,8 @@ const MainPage = () => {
 
   // Local state for tasks that can be updated immediately during drag
   const [localTasks, setLocalTasks] = useState([]);
+  // Track the currently dragged task ID
+  const [activeId, setActiveId] = useState(null);
 
   // Sync local tasks with query results when they change
   useEffect(() => {
@@ -457,7 +471,20 @@ const MainPage = () => {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+          onDragStart={(event) => {
+            // Set the active ID when dragging starts
+            setActiveId(event.active.id);
+          }}
+          onDragEnd={(event) => {
+            // Clear the active ID when dragging ends
+            setActiveId(null);
+            // Call the original handler
+            handleDragEnd(event);
+          }}
+          onDragCancel={() => {
+            // Clear the active ID if dragging is cancelled
+            setActiveId(null);
+          }}
         >
           <SortableContext
             items={localTasks.map((task) => task.id.toString())}
@@ -474,6 +501,7 @@ const MainPage = () => {
                   editingTask={editingTask}
                   setEditingTask={setEditingTask}
                   saveEdit={saveEdit}
+                  activeId={activeId}
                 />
               ))}
             </div>
