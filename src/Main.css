@@ -97,4 +97,55 @@
   .new-task-animation {
     animation: slide-in-from-top 0.4s cubic-bezier(0.2, 0, 0, 1);
   }
+
+  /* Task completion animations */
+  @keyframes draw-checkmark {
+    0% {
+      stroke-dashoffset: 100;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes fill-checkmark {
+    0% {
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes strikethrough {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  .checkmark-animation {
+    animation: draw-checkmark 0.5s ease forwards,
+      fill-checkmark 0.4s ease 0.3s forwards;
+  }
+
+  .strikethrough-animation {
+    position: relative;
+    display: inline-block;
+  }
+
+  .strikethrough-animation::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: currentColor;
+    animation: strikethrough 0.4s ease-out 0.2s forwards;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
 }

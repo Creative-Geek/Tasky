@@ -3,7 +3,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   TrashIcon,
-  CheckCircleIcon,
   PencilIcon,
   ArrowsUpDownIcon,
 } from "@heroicons/react/24/outline";
@@ -22,6 +21,7 @@ const TaskItem = ({
 }) => {
   const nodeRef = React.useRef(null);
   const [editTitleError, setEditTitleError] = useState(false);
+  const [isCompletingTask, setIsCompletingTask] = useState(false);
 
   const {
     attributes,
@@ -77,6 +77,20 @@ const TaskItem = ({
     zIndex: isDragging ? 10 : 1,
   };
 
+  // Handle task completion with animation
+  const handleTaskCompletion = () => {
+    if (!task.isDone) {
+      // Only animate when marking as complete, not when unchecking
+      setIsCompletingTask(true);
+      // Reset the animation state after animations complete
+      setTimeout(() => {
+        setIsCompletingTask(false);
+      }, 800); // Slightly longer than all animations combined
+    }
+    // Call the original toggle function
+    handleToggleTask(task);
+  };
+
   const handleSaveEdit = () => {
     if (!editingTask.title || editingTask.title.trim() === "") {
       setEditTitleError(true); // Set error if title is empty
@@ -110,11 +124,29 @@ const TaskItem = ({
           <div className="flex items-start">
             <div className="flex items-start space-x-3 flex-grow min-w-0">
               <button
-                onClick={() => handleToggleTask(task)}
+                onClick={handleTaskCompletion}
                 className="mt-1 flex-shrink-0"
               >
                 {task.isDone ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  <svg
+                    className={`h-5 w-5 text-green-500 ${
+                      isCompletingTask ? "checkmark-animation" : ""
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={
+                      isCompletingTask
+                        ? { strokeDasharray: "100", strokeDashoffset: "0" }
+                        : {}
+                    }
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 12l3 3 6-6" />
+                  </svg>
                 ) : (
                   <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500" />
                 )}
@@ -123,10 +155,22 @@ const TaskItem = ({
                 <h3
                   dir="auto"
                   className={`text-lg font-medium break-words overflow-hidden ${
-                    task.isDone ? "text-gray-500 line-through" : "text-gray-800"
+                    task.isDone ? "text-gray-500" : "text-gray-800"
                   }`}
                 >
-                  {task.title}
+                  {task.isDone ? (
+                    <span
+                      className={
+                        isCompletingTask
+                          ? "strikethrough-animation"
+                          : "line-through"
+                      }
+                    >
+                      {task.title}
+                    </span>
+                  ) : (
+                    task.title
+                  )}
                 </h3>
                 {task.description && (
                   <p
