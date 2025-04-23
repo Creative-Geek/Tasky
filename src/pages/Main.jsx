@@ -33,6 +33,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Constants for input validation
+const MAX_TITLE_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 500;
+
 // Sortable task item component
 const SortableTaskItem = ({
   task,
@@ -56,7 +60,7 @@ const SortableTaskItem = ({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: 'transform 0ms', // Direct cursor following with no delay
+    transition: "transform 0ms", // Direct cursor following with no delay
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : 1,
   };
@@ -72,27 +76,42 @@ const SortableTaskItem = ({
       {editingTask && editingTask.id === task.id ? (
         // Edit mode
         <div className="space-y-2">
-          <input
-            type="text"
-            className="input w-full"
-            value={editingTask.title}
-            onChange={(e) =>
-              setEditingTask({
-                ...editingTask,
-                title: e.target.value,
-              })
-            }
-          />
-          <textarea
-            className="input w-full min-h-[60px]"
-            value={editingTask.description}
-            onChange={(e) =>
-              setEditingTask({
-                ...editingTask,
-                description: e.target.value,
-              })
-            }
-          />
+          <div className="space-y-1">
+            <input
+              type="text"
+              className="input w-full"
+              value={editingTask.title}
+              maxLength={MAX_TITLE_LENGTH}
+              onChange={(e) =>
+                setEditingTask({
+                  ...editingTask,
+                  title: e.target.value,
+                })
+              }
+            />
+            {/*keep fr later use*/}
+            {/* <div className="flex justify-end text-xs text-gray-500">
+              {editingTask.title.length}/{MAX_TITLE_LENGTH} characters
+            </div> */}
+          </div>
+          <div className="space-y-1">
+            <textarea
+              className="input w-full min-h-[60px]"
+              value={editingTask.description}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              onChange={(e) =>
+                setEditingTask({
+                  ...editingTask,
+                  description: e.target.value,
+                })
+              }
+            />
+            {/*keep fr later use*/}
+            {/* <div className="flex justify-end text-xs text-gray-500">
+              {editingTask.description.length}/{MAX_DESCRIPTION_LENGTH}{" "}
+              characters
+            </div> */}
+          </div>
           <div className="flex justify-end mt-2 space-x-2">
             <button
               onClick={() => setEditingTask(null)}
@@ -227,16 +246,16 @@ const MainPage = () => {
   const handleCreateTask = () => {
     if (newTaskTitle.trim() === "" || isCreatingTask) return; // Prevent multiple clicks
     setIsCreatingTask(true); // Set loading state to true
-    createTaskFn({ title: newTaskTitle, description: newTaskDescription }).then(
-      (newTask) => {
+    createTaskFn({ title: newTaskTitle, description: newTaskDescription })
+      .then((newTask) => {
         // Add the new task to local state
         setLocalTasks([...localTasks, newTask]);
         setNewTaskTitle("");
         setNewTaskDescription("");
-      }
-    ).finally(() => {
-      setIsCreatingTask(false); // Set loading state back to false
-    });
+      })
+      .finally(() => {
+        setIsCreatingTask(false); // Set loading state back to false
+      });
   };
 
   const handleToggleTask = (task) => {
@@ -323,19 +342,33 @@ const MainPage = () => {
             Add New Task
           </h2>
           <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Task title"
-              className="input w-full"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-            />
-            <textarea
-              placeholder="Task description (optional)"
-              className="input w-full min-h-[80px]"
-              value={newTaskDescription}
-              onChange={(e) => setNewTaskDescription(e.target.value)}
-            />
+            <div className="space-y-1">
+              <input
+                type="text"
+                placeholder="Task title"
+                className="input w-full"
+                value={newTaskTitle}
+                maxLength={MAX_TITLE_LENGTH}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+              />
+              {/*keep fr later use*/}
+              {/* <div className="flex justify-end text-xs text-gray-500">
+                {newTaskTitle.length}/{MAX_TITLE_LENGTH} characters
+              </div> */}
+            </div>
+            <div className="space-y-1">
+              <textarea
+                placeholder="Task description (optional)"
+                className="input w-full min-h-[80px]"
+                value={newTaskDescription}
+                maxLength={MAX_DESCRIPTION_LENGTH}
+                onChange={(e) => setNewTaskDescription(e.target.value)}
+              />
+              {/*keep fr later use*/}
+              {/* <div className="flex justify-end text-xs text-gray-500">
+                {newTaskDescription.length}/{MAX_DESCRIPTION_LENGTH} characters
+              </div> */}
+            </div>
             <button
               onClick={handleCreateTask}
               className="btn btn-primary flex items-center justify-center"
@@ -343,9 +376,25 @@ const MainPage = () => {
             >
               {isCreatingTask ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Adding...
                 </>
