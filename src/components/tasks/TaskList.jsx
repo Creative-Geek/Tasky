@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 import {
   DndContext,
@@ -31,6 +31,36 @@ const TaskList = ({
   pendingOperations = {},
   isOffline = false,
 }) => {
+  // Track which task is being deleted to animate tasks below it
+  const [deletingTaskId, setDeletingTaskId] = useState(null);
+  const [deletingTaskHeight, setDeletingTaskHeight] = useState(0);
+  const taskRefs = useRef({});
+
+  // Custom delete handler that tracks the deleting task
+  const handleTaskDelete = (id) => {
+    // Get the height of the task being deleted
+    if (taskRefs.current[id]) {
+      const height = taskRefs.current[id].offsetHeight;
+      setDeletingTaskHeight(height);
+    }
+
+    setDeletingTaskId(id);
+
+    // Reset after animation completes
+    setTimeout(() => {
+      setDeletingTaskId(null);
+      setDeletingTaskHeight(0);
+    }, 600);
+
+    handleDeleteTask(id);
+  };
+
+  // Function to set a ref for a task
+  const setTaskRef = (id, node) => {
+    if (node) {
+      taskRefs.current[id] = node;
+    }
+  };
   // Set up dnd-kit sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -84,23 +114,45 @@ const TaskList = ({
             items={tasks.map((task) => task.id.toString())}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-3">
-              {tasks.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  handleToggleTask={handleToggleTask}
-                  startEditing={startEditing}
-                  handleDeleteTask={handleDeleteTask}
-                  editingTask={editingTask}
-                  setEditingTask={setEditingTask}
-                  saveEdit={saveEdit}
-                  activeId={activeId}
-                  isNewTask={newTaskId === task.id}
-                  pendingOperation={pendingOperations[task.id]}
-                  isOffline={isOffline}
-                />
-              ))}
+            <div className="space-y-3 transition-all">
+              {tasks.map((task, index) => {
+                // Find the index of the deleting task
+                const deletingIndex = deletingTaskId
+                  ? tasks.findIndex((t) => t.id === deletingTaskId)
+                  : -1;
+                // Determine if this task is below the one being deleted
+                const isBelowDeletingTask =
+                  deletingIndex !== -1 && index > deletingIndex;
+
+                return (
+                  <div
+                    key={task.id}
+                    ref={(node) => setTaskRef(task.id, node)}
+                    className={isBelowDeletingTask ? "task-move-up" : ""}
+                    style={
+                      isBelowDeletingTask
+                        ? {
+                            "--move-up-distance": `calc(-${deletingTaskHeight}px - 0.75rem)`,
+                          }
+                        : {}
+                    }
+                  >
+                    <TaskItem
+                      task={task}
+                      handleToggleTask={handleToggleTask}
+                      startEditing={startEditing}
+                      handleDeleteTask={handleTaskDelete}
+                      editingTask={editingTask}
+                      setEditingTask={setEditingTask}
+                      saveEdit={saveEdit}
+                      activeId={activeId}
+                      isNewTask={newTaskId === task.id}
+                      pendingOperation={pendingOperations[task.id]}
+                      isOffline={isOffline}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </SortableContext>
         </DndContext>

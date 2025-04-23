@@ -26,6 +26,8 @@ const TaskItem = ({
   const [isCompletingTask, setIsCompletingTask] = useState(false);
   const [isUncompletingTask, setIsUncompletingTask] = useState(false);
   const [showFadingCircle, setShowFadingCircle] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [height, setHeight] = useState(null);
 
   const {
     attributes,
@@ -41,6 +43,11 @@ const TaskItem = ({
   const setNodeRef = (node) => {
     nodeRef.current = node;
     setDndNodeRef(node);
+
+    // Measure the height of the task item when it's first rendered
+    if (node && !height) {
+      setHeight(node.offsetHeight);
+    }
   };
 
   // Store the original width when dragging starts
@@ -139,7 +146,7 @@ const TaskItem = ({
           : "bg-white border-gray-100"
       } ${isNewTask ? "new-task-animation" : ""} ${
         task.isTemp ? "border-dashed border-gray-300" : ""
-      }`}
+      } ${isDeleting ? "delete-task-animation" : ""}`}
     >
       {/* Status indicators that don't affect layout */}
       {isPending && (
@@ -316,10 +323,17 @@ const TaskItem = ({
               {/* Only show delete button if not pending and not a temporary task */}
               {!isPending && !task.isTemp && (
                 <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  disabled={isOffline}
+                  onClick={() => {
+                    // Start the delete animation
+                    setIsDeleting(true);
+                    // Wait for animation to complete before actually deleting
+                    setTimeout(() => {
+                      handleDeleteTask(task.id);
+                    }, 500); // Match animation duration
+                  }}
+                  disabled={isOffline || isDeleting}
                   className={`p-1 rounded-full transition-colors ${
-                    isOffline
+                    isOffline || isDeleting
                       ? "text-gray-300 cursor-not-allowed"
                       : "text-gray-400 hover:text-red-600 hover:bg-gray-100"
                   }`}

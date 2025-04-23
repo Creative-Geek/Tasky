@@ -313,6 +313,7 @@ const MainPage = () => {
     const taskToDelete = localTasks.find((task) => task.id === id);
 
     // Optimistically update the UI
+    // The animation is handled in the TaskItem component before this function is called
     setLocalTasks(localTasks.filter((task) => task.id !== id));
 
     // Track this operation as pending

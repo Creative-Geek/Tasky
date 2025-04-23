@@ -83,6 +83,12 @@
     transition: transform 250ms cubic-bezier(0.2, 0, 0, 1) !important;
   }
 
+  /* Ensure task items animate smoothly when other tasks are removed */
+  .space-y-3.transition-all > * {
+    transition: transform 300ms cubic-bezier(0.2, 0, 0, 1),
+      opacity 300ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
   /* Animation for new tasks */
   @keyframes slide-in-from-top {
     0% {
@@ -150,6 +156,30 @@
     }
     100% {
       opacity: 1;
+    }
+  }
+
+  /* Task deletion animation */
+  @keyframes scale-down-out {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      margin-bottom: 0.75rem; /* space-y-3 equivalent */
+      max-height: 500px;
+    }
+    90% {
+      transform: scale(0.8);
+      opacity: 0;
+      margin-bottom: 0.75rem; /* space-y-3 equivalent */
+      max-height: 500px;
+    }
+    100% {
+      transform: scale(0.8);
+      opacity: 0;
+      margin-bottom: 0;
+      max-height: 0;
+      padding: 0;
+      border-width: 0;
     }
   }
 
@@ -221,6 +251,30 @@
 
   .fade-in-circle {
     animation: fade-in-circle 0.3s ease-in-out forwards;
+  }
+
+  .delete-task-animation {
+    animation: scale-down-out 0.5s cubic-bezier(0.2, 0, 0, 1) forwards;
+    pointer-events: none; /* Prevent interaction during animation */
+    overflow: hidden;
+  }
+
+  /* Animation for tasks moving up to fill space */
+  @keyframes move-up {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(
+        var(--move-up-distance, calc(-100% - 0.75rem))
+      ); /* Move up by calculated distance */
+    }
+  }
+
+  .task-move-up {
+    animation: move-up 0.5s cubic-bezier(0.2, 0, 0, 1) 0.1s forwards; /* Slight delay to start after delete animation begins */
+    position: relative; /* Needed for z-index to work */
+    z-index: 5; /* Ensure moving tasks appear above the deleting task */
   }
 
   /* Animation for flyout notifications */
