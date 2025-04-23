@@ -47,19 +47,48 @@ const SortableTaskItem = ({
   setEditingTask,
   saveEdit,
 }) => {
+  const nodeRef = React.useRef(null);
+
   const {
     attributes,
     listeners,
-    setNodeRef,
+    setNodeRef: setDndNodeRef,
     transform,
-    transition,
+    // transition is unused but kept for reference
     isDragging,
   } = useSortable({
     id: task.id.toString(),
   });
 
+  // Set up a combined ref function that sets both our local ref and the dnd-kit ref
+  const setNodeRef = (node) => {
+    nodeRef.current = node;
+    setDndNodeRef(node);
+  };
+
+  // Store the original width when dragging starts
+  React.useEffect(() => {
+    if (nodeRef.current && isDragging) {
+      // Get the current width and store it as a CSS variable
+      const width = nodeRef.current.offsetWidth;
+      nodeRef.current.style.setProperty("--original-width", `${width}px`);
+    }
+  }, [isDragging]);
+
+  // Update transform values continuously during dragging
+  React.useEffect(() => {
+    if (nodeRef.current && isDragging && transform) {
+      // Extract transform values
+      const { x, y } = transform;
+      nodeRef.current.style.setProperty("--x", `${x}px`);
+      nodeRef.current.style.setProperty("--y", `${y}px`);
+    }
+  }, [transform, isDragging]);
+
   const style = {
-    transform: CSS.Transform.toString(transform),
+    // Only apply transform through style when not dragging
+    // When dragging, we'll use CSS variables and custom CSS
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition: "transform 0ms", // Direct cursor following with no delay
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : 1,
@@ -69,6 +98,7 @@ const SortableTaskItem = ({
     <div
       ref={setNodeRef}
       style={style}
+      data-dragging={isDragging}
       className={`card p-4 transition-all ${
         task.isDone ? "bg-gray-50 border-gray-200" : ""
       }`}

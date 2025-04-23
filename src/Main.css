@@ -58,4 +58,16 @@
     word-break: break-word;
     hyphens: auto;
   }
+
+  /* Ensure dragged items maintain their width */
+  [data-dragging="true"] {
+    width: var(--original-width, auto) !important;
+    min-width: var(--original-width, auto) !important;
+    max-width: var(--original-width, 100%) !important;
+    transform-origin: center center !important;
+    transform: translate3d(var(--x, 0), var(--y, 0), 0) !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+  }
 }

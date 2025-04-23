@@ -143,4 +143,7 @@ export const reorderTasks = async ({ taskIds }, context) => {
       })
     )
   );
+
+  // Return a success response
+  return { success: true, message: "Tasks reordered successfully" };
 };
