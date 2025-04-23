@@ -51,6 +51,7 @@ const MainPage = () => {
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [editingTask, setEditingTask] = useState(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [titleError, setTitleError] = useState(false); // Add state for title error
 
   if (isLoading) {
     return (
@@ -65,7 +66,13 @@ const MainPage = () => {
   }
 
   const handleCreateTask = () => {
-    if (newTaskTitle.trim() === "" || isCreatingTask) return; // Prevent multiple clicks
+    if (newTaskTitle.trim() === "") {
+      setTitleError(true); // Set error state
+      return; // Prevent task creation
+    }
+    if (isCreatingTask) return; // Prevent multiple clicks
+
+    setTitleError(false); // Reset error if validation passes
     setIsCreatingTask(true); // Set loading state to true
     createTaskFn({ title: newTaskTitle, description: newTaskDescription })
       .then((newTask) => {
@@ -167,6 +174,8 @@ const MainPage = () => {
           setNewTaskDescription={setNewTaskDescription}
           handleCreateTask={handleCreateTask}
           isCreatingTask={isCreatingTask}
+          titleError={titleError} // Pass error state
+          setTitleError={setTitleError} // Pass function to reset error
         />
       </div>
 

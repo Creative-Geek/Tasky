@@ -12,6 +12,8 @@ const TaskForm = ({
   setNewTaskDescription,
   handleCreateTask,
   isCreatingTask,
+  titleError, // Receive titleError state
+  setTitleError, // Receive function to reset titleError
 }) => {
   return (
     <div className="card p-4">
@@ -21,11 +23,19 @@ const TaskForm = ({
           <input
             dir="auto"
             type="text"
-            placeholder="Task title"
-            className="input w-full"
+            placeholder={titleError ? "Title is required" : "Task title"} // Conditional placeholder
+            className={`input w-full transition-colors duration-300 ease-in-out ${
+              // Add transition classes
+              titleError ? "border border-red-500 bg-red-50" : ""
+            }`} // Conditional red border
             value={newTaskTitle}
             maxLength={MAX_TITLE_LENGTH}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
+            onChange={(e) => {
+              setNewTaskTitle(e.target.value);
+              if (titleError) {
+                setTitleError(false); // Reset error on change
+              }
+            }}
           />
           {/*keep fr later use*/}
           {/* <div className="flex justify-end text-xs text-gray-500">
@@ -49,7 +59,7 @@ const TaskForm = ({
         <button
           onClick={handleCreateTask}
           className="btn btn-primary flex items-center justify-center"
-          disabled={!newTaskTitle.trim() || isCreatingTask} // Disable button when loading or title is empty
+          disabled={isCreatingTask} // Only disable when the task is being created
         >
           {isCreatingTask ? (
             <>
