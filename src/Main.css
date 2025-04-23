@@ -102,15 +102,18 @@
   @keyframes draw-checkmark {
     0% {
       stroke-dashoffset: 100;
+      opacity: 0.7;
     }
     100% {
       stroke-dashoffset: 0;
+      opacity: 0.7;
     }
   }
 
   @keyframes fill-checkmark {
-    0% {
-      opacity: 0.4;
+    0%,
+    10% {
+      opacity: 0.7;
     }
     100% {
       opacity: 1;
@@ -128,7 +131,7 @@
 
   .checkmark-animation {
     animation: draw-checkmark 0.5s ease forwards,
-      fill-checkmark 0.4s ease 0.3s forwards;
+      fill-checkmark 0.3s ease-in-out 0.4s forwards;
   }
 
   .strikethrough-animation {

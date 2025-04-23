@@ -138,11 +138,7 @@ const TaskItem = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={
-                      isCompletingTask
-                        ? { strokeDasharray: "100", strokeDashoffset: "0" }
-                        : {}
-                    }
+                    style={isCompletingTask ? { strokeDasharray: "100" } : {}}
                   >
                     <circle cx="12" cy="12" r="10" />
                     <path d="M8 12l3 3 6-6" />
