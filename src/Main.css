@@ -94,15 +94,23 @@
     0% {
       opacity: 0;
       transform: translateY(-50px);
+      box-shadow: 0 0 0 rgba(99, 102, 241, 0);
+    }
+    70% {
+      opacity: 1;
+      transform: translateY(0);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
     }
     100% {
       opacity: 1;
       transform: translateY(0);
+      box-shadow: 0 0 0 rgba(99, 102, 241, 0);
     }
   }
 
   .new-task-animation {
-    animation: slide-in-from-top 0.4s cubic-bezier(0.2, 0, 0, 1);
+    animation: slide-in-from-top 0.6s cubic-bezier(0.2, 0, 0, 1);
+    animation-fill-mode: both; /* Ensure the animation only plays once */
   }
 
   /* Task completion animations */
@@ -316,10 +324,23 @@
   .status-indicator-temp {
     background: repeating-linear-gradient(
       45deg,
-      #e5e7eb,
-      #e5e7eb 5px,
-      #d1d5db 5px,
-      #d1d5db 10px
+      #93c5fd,
+      #93c5fd 5px,
+      #60a5fa 5px,
+      #60a5fa 10px
     );
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.7;
+    }
   }
 }

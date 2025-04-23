@@ -108,7 +108,7 @@ const MainPage = () => {
     if (newTaskId) {
       const timer = setTimeout(() => {
         setNewTaskId(null);
-      }, 500); // Slightly longer than animation duration
+      }, 600); // Slightly longer than animation duration
       return () => clearTimeout(timer);
     }
   }, [newTaskId]);
@@ -221,14 +221,10 @@ const MainPage = () => {
           batch: false, // Don't batch create operations
           priority: 1, // High priority
           onSuccess: (newTask) => {
-            // Replace the temporary task with the real one
+            // Replace the temporary task with the real one without triggering animation again
             setLocalTasks((prev) =>
-              prev.map((t) =>
-                t.id === tempId ? { ...newTask, isNew: true } : t
-              )
+              prev.map((t) => (t.id === tempId ? { ...newTask } : t))
             );
-            // Update the new task ID for animation
-            setNewTaskId(newTask.id);
             // Mark operation as complete
             setPendingOperations((prev) => {
               const updated = { ...prev };

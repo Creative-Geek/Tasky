@@ -144,7 +144,7 @@ const TaskItem = ({
         task.isDone && !isUncompletingTask
           ? "bg-gray-50 border-gray-200"
           : "bg-white border-gray-100"
-      } ${isNewTask ? "new-task-animation" : ""} ${
+      } ${isNewTask || task.isTemp ? "new-task-animation" : ""} ${
         task.isTemp ? "border-dashed border-gray-300" : ""
       } ${isDeleting ? "delete-task-animation" : ""}`}
     >
