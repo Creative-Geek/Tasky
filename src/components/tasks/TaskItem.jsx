@@ -23,6 +23,7 @@ const TaskItem = ({
   const [editTitleError, setEditTitleError] = useState(false);
   const [isCompletingTask, setIsCompletingTask] = useState(false);
   const [isUncompletingTask, setIsUncompletingTask] = useState(false);
+  const [showFadingCircle, setShowFadingCircle] = useState(false);
 
   const {
     attributes,
@@ -94,9 +95,15 @@ const TaskItem = ({
       // to ensure the animation plays before the state changes
       setTimeout(() => {
         handleToggleTask(task);
-        // Reset the animation state after animations complete
+        // Show the fading circle after the checkmark disappears
+        setShowFadingCircle(true);
+        // Reset the animation states after animations complete
         setTimeout(() => {
           setIsUncompletingTask(false);
+          // Keep the fading circle visible for a bit longer
+          setTimeout(() => {
+            setShowFadingCircle(false);
+          }, 300);
         }, 100);
       }, 600);
       return; // Don't call handleToggleTask immediately
@@ -168,7 +175,11 @@ const TaskItem = ({
                     <path d="M8 12l3 3 6-6" />
                   </svg>
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500 transition-colors" />
+                  <div
+                    className={`h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500 transition-all ${
+                      showFadingCircle ? "fade-in-circle" : ""
+                    }`}
+                  />
                 )}
               </button>
               <div className="min-w-0 flex-grow overflow-hidden">

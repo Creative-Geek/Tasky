@@ -143,6 +143,15 @@
     }
   }
 
+  @keyframes fade-in-circle {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
   @keyframes strikethrough {
     from {
       width: 0;
@@ -207,5 +216,9 @@
     transform: translateY(-50%);
     pointer-events: none;
     transform-origin: left center;
+  }
+
+  .fade-in-circle {
+    animation: fade-in-circle 0.3s ease-in-out forwards;
   }
 }
