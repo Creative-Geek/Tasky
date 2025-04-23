@@ -127,8 +127,8 @@ const SortableTaskItem = ({
       ) : (
         // View mode
         <div>
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3">
+          <div className="flex items-start">
+            <div className="flex items-start space-x-3 flex-grow min-w-0">
               <button
                 onClick={() => handleToggleTask(task)}
                 className="mt-1 flex-shrink-0"
@@ -139,9 +139,9 @@ const SortableTaskItem = ({
                   <div className="h-5 w-5 rounded-full border-2 border-gray-300 hover:border-indigo-500" />
                 )}
               </button>
-              <div>
+              <div className="min-w-0 flex-grow overflow-hidden">
                 <h3
-                  className={`text-lg font-medium ${
+                  className={`text-lg font-medium break-words overflow-hidden ${
                     task.isDone ? "text-gray-500 line-through" : "text-gray-800"
                   }`}
                 >
@@ -149,7 +149,7 @@ const SortableTaskItem = ({
                 </h3>
                 {task.description && (
                   <p
-                    className={`mt-1 text-sm ${
+                    className={`mt-1 text-sm break-words overflow-hidden ${
                       task.isDone ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
@@ -159,7 +159,7 @@ const SortableTaskItem = ({
               </div>
             </div>
 
-            <div className="flex space-x-1">
+            <div className="flex space-x-1 flex-shrink-0 ml-2">
               <div
                 {...attributes}
                 {...listeners}
