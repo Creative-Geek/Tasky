@@ -30,20 +30,21 @@ export const createTask = async (args, context) => {
     );
   }
 
-  // Find the highest position value among the user's tasks
-  const lastTask = await context.entities.Task.findFirst({
+  // Shift all existing tasks down by 1 to make room for the new task at position 0
+  await context.entities.Task.updateMany({
     where: { userId: context.user.id },
-    orderBy: { position: "desc" },
+    data: {
+      position: { increment: 1 },
+    },
   });
 
-  const nextPosition = lastTask ? lastTask.position + 1 : 0;
-
+  // Create the new task at position 0 (top of the list)
   const newTask = await context.entities.Task.create({
     data: {
       title,
       description,
       isDone: false,
-      position: nextPosition,
+      position: 0,
       user: { connect: { id: context.user.id } },
     },
   });
