@@ -1,6 +1,9 @@
 import React from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { MAX_TITLE_LENGTH, MAX_DESCRIPTION_LENGTH } from "../../constants/validation";
+import {
+  MAX_TITLE_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+} from "../../constants/validation";
 
 const TaskForm = ({
   newTaskTitle,
@@ -12,12 +15,11 @@ const TaskForm = ({
 }) => {
   return (
     <div className="card p-4">
-      <h2 className="text-lg font-medium text-gray-700 mb-3">
-        Add New Task
-      </h2>
+      <h2 className="text-lg font-medium text-gray-700 mb-3">Add New Task</h2>
       <div className="space-y-3">
         <div className="space-y-1">
           <input
+            dir="auto"
             type="text"
             placeholder="Task title"
             className="input w-full"
@@ -32,6 +34,7 @@ const TaskForm = ({
         </div>
         <div className="space-y-1">
           <textarea
+            dir="auto"
             placeholder="Task description (optional)"
             className="input w-full min-h-[80px]"
             value={newTaskDescription}

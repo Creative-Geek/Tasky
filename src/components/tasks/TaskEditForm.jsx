@@ -1,11 +1,15 @@
 import React from "react";
-import { MAX_TITLE_LENGTH, MAX_DESCRIPTION_LENGTH } from "../../constants/validation";
+import {
+  MAX_TITLE_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+} from "../../constants/validation";
 
 const TaskEditForm = ({ editingTask, setEditingTask, saveEdit }) => {
   return (
     <div className="space-y-2">
       <div className="space-y-1">
         <input
+          dir="auto"
           type="text"
           className="input w-full"
           value={editingTask.title}
@@ -24,6 +28,7 @@ const TaskEditForm = ({ editingTask, setEditingTask, saveEdit }) => {
       </div>
       <div className="space-y-1">
         <textarea
+          dir="auto"
           className="input w-full min-h-[60px]"
           value={editingTask.description}
           maxLength={MAX_DESCRIPTION_LENGTH}

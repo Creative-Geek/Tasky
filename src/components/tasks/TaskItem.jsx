@@ -109,6 +109,7 @@ const TaskItem = ({
               </button>
               <div className="min-w-0 flex-grow overflow-hidden">
                 <h3
+                  dir="auto"
                   className={`text-lg font-medium break-words overflow-hidden ${
                     task.isDone ? "text-gray-500 line-through" : "text-gray-800"
                   }`}
@@ -117,6 +118,7 @@ const TaskItem = ({
                 </h3>
                 {task.description && (
                   <p
+                    dir="auto"
                     className={`mt-1 text-sm break-words overflow-hidden ${
                       task.isDone ? "text-gray-400" : "text-gray-600"
                     }`}
