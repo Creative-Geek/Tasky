@@ -12,7 +12,7 @@ const TaskEditForm = ({
   setTitleError, // Add setTitleError prop
 }) => {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 pl-1">
       <div className="space-y-1">
         <input
           dir="auto"

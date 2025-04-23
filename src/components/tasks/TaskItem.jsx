@@ -97,10 +97,9 @@ const TaskItem = ({
     } else {
       // Animate when unchecking
       setIsUncompletingTask(true);
-      // Call the original toggle function after a slight delay
-      // to ensure the animation plays before the state changes
+
+      // Start the animation sequence for visual feedback
       setTimeout(() => {
-        handleToggleTask(task);
         // Show the fading circle after the checkmark disappears
         setShowFadingCircle(true);
         // Reset the animation states after animations complete
@@ -112,9 +111,10 @@ const TaskItem = ({
           }, 300);
         }, 100);
       }, 600);
-      return; // Don't call handleToggleTask immediately
     }
-    // Call the original toggle function immediately for completion
+
+    // Call the original toggle function immediately for both completion and uncompletion
+    // This ensures syncing starts right away while animations play
     handleToggleTask(task);
   };
 
@@ -138,11 +138,19 @@ const TaskItem = ({
           ? "bg-gray-50 border-gray-200"
           : "bg-white border-gray-100"
       } ${isNewTask ? "new-task-animation" : ""} ${
-        isPending ? "border-l-4 border-l-blue-300" : ""
-      } ${hasFailed ? "border-l-4 border-l-red-500" : ""} ${
         task.isTemp ? "border-dashed border-gray-300" : ""
       }`}
     >
+      {/* Status indicators that don't affect layout */}
+      {isPending && (
+        <div className="status-indicator status-indicator-pending" />
+      )}
+      {hasFailed && (
+        <div className="status-indicator status-indicator-failed" />
+      )}
+      {task.isTemp && !isPending && !hasFailed && (
+        <div className="status-indicator status-indicator-temp" />
+      )}
       {editingTask && editingTask.id === task.id ? (
         <TaskEditForm
           editingTask={editingTask}
@@ -154,7 +162,7 @@ const TaskItem = ({
       ) : (
         // View mode
         <div>
-          <div className="flex items-start">
+          <div className="flex items-start pl-1">
             <div className="flex items-start space-x-3 flex-grow min-w-0">
               <button
                 onClick={handleTaskCompletion}

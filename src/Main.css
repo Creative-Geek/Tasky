@@ -74,7 +74,8 @@
 
   /* Smooth animation for items being repositioned */
   .card {
-    will-change: transform; /* Optimize for animations */
+    will-change: transform, opacity; /* Optimize for animations */
+    position: relative; /* For absolute positioning of indicators */
   }
 
   /* Apply smooth transitions to non-dragged items when something is being dragged */
@@ -236,5 +237,35 @@
 
   .animate-fade-in-up {
     animation: fade-in-up 0.3s ease-out forwards;
+  }
+
+  /* Status indicators for tasks */
+  .status-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transition: opacity 0.3s ease-in-out;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
+
+  .status-indicator-pending {
+    background-color: #93c5fd; /* blue-300 */
+  }
+
+  .status-indicator-failed {
+    background-color: #ef4444; /* red-500 */
+  }
+
+  .status-indicator-temp {
+    background: repeating-linear-gradient(
+      45deg,
+      #e5e7eb,
+      #e5e7eb 5px,
+      #d1d5db 5px,
+      #d1d5db 10px
+    );
   }
 }
