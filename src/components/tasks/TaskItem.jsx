@@ -18,6 +18,8 @@ const TaskItem = ({
   saveEdit,
   activeId,
   isNewTask,
+  pendingOperation,
+  isOffline,
 }) => {
   const nodeRef = React.useRef(null);
   const [editTitleError, setEditTitleError] = useState(false);
@@ -65,6 +67,10 @@ const TaskItem = ({
   // Determine if any item is being dragged (but not this one)
   const isAnyItemDragging = activeId !== null;
 
+  // Determine if this task has a pending operation
+  const isPending = !!pendingOperation;
+  const hasFailed = isPending && pendingOperation.status === "failed";
+
   const style = {
     // Only apply transform through style when not dragging
     // When dragging, we'll use CSS variables and custom CSS
@@ -75,7 +81,7 @@ const TaskItem = ({
       : isAnyItemDragging
       ? "transform 250ms cubic-bezier(0.2, 0, 0, 1)" // Smooth animation for other items when something is being dragged
       : "transform 0ms", // No transition when nothing is being dragged
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : task.isTemp ? 0.7 : 1,
     zIndex: isDragging ? 10 : 1,
   };
 
@@ -131,7 +137,11 @@ const TaskItem = ({
         task.isDone && !isUncompletingTask
           ? "bg-gray-50 border-gray-200"
           : "bg-white border-gray-100"
-      } ${isNewTask ? "new-task-animation" : ""}`}
+      } ${isNewTask ? "new-task-animation" : ""} ${
+        isPending ? "border-l-4 border-l-blue-300" : ""
+      } ${hasFailed ? "border-l-4 border-l-red-500" : ""} ${
+        task.isTemp ? "border-dashed border-gray-300" : ""
+      }`}
     >
       {editingTask && editingTask.id === task.id ? (
         <TaskEditForm
@@ -225,26 +235,90 @@ const TaskItem = ({
             </div>
 
             <div className="flex space-x-1 flex-shrink-0 ml-2">
-              <div
-                {...attributes}
-                {...listeners}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move transition-colors"
-              >
-                <ArrowsUpDownIcon className="h-5 w-5" />
-              </div>
+              {/* Show pending/failed indicators */}
+              {isPending && !hasFailed && (
+                <div className="p-1 text-blue-500 rounded-full">
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </div>
+              )}
 
-              <button
-                onClick={() => startEditing(task)}
-                className="p-1 text-gray-400 hover:text-indigo-600 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <PencilIcon className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => handleDeleteTask(task.id)}
-                className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <TrashIcon className="h-5 w-5" />
-              </button>
+              {hasFailed && (
+                <div className="p-1 text-red-500 rounded-full">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              )}
+
+              {/* Only show drag handle if not pending and not a temporary task */}
+              {!isPending && !task.isTemp && !isOffline && (
+                <div
+                  {...attributes}
+                  {...listeners}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move transition-colors"
+                >
+                  <ArrowsUpDownIcon className="h-5 w-5" />
+                </div>
+              )}
+
+              {/* Only show edit button if not pending and not a temporary task */}
+              {!isPending && !task.isTemp && (
+                <button
+                  onClick={() => startEditing(task)}
+                  disabled={isOffline}
+                  className={`p-1 rounded-full transition-colors ${
+                    isOffline
+                      ? "text-gray-300 cursor-not-allowed"
+                      : "text-gray-400 hover:text-indigo-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <PencilIcon className="h-5 w-5" />
+                </button>
+              )}
+
+              {/* Only show delete button if not pending and not a temporary task */}
+              {!isPending && !task.isTemp && (
+                <button
+                  onClick={() => handleDeleteTask(task.id)}
+                  disabled={isOffline}
+                  className={`p-1 rounded-full transition-colors ${
+                    isOffline
+                      ? "text-gray-300 cursor-not-allowed"
+                      : "text-gray-400 hover:text-red-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

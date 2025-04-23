@@ -14,6 +14,7 @@ const TaskForm = ({
   isCreatingTask,
   titleError, // Receive titleError state
   setTitleError, // Receive function to reset titleError
+  isOffline = false, // Whether the app is offline
 }) => {
   return (
     <div className="card p-4">
@@ -60,10 +61,31 @@ const TaskForm = ({
         </div>
         <button
           onClick={handleCreateTask}
-          className="btn btn-primary flex items-center justify-center"
-          disabled={isCreatingTask} // Only disable when the task is being created
+          className={`btn flex items-center justify-center ${
+            isOffline
+              ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+              : "btn-primary"
+          }`}
+          disabled={isCreatingTask || isOffline} // Disable when creating task or offline
         >
-          {isCreatingTask ? (
+          {isOffline ? (
+            <>
+              <svg
+                className="h-5 w-5 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Offline
+            </>
+          ) : isCreatingTask ? (
             <>
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

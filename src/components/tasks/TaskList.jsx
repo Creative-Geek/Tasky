@@ -28,6 +28,8 @@ const TaskList = ({
   activeId,
   setActiveId,
   newTaskId,
+  pendingOperations = {},
+  isOffline = false,
 }) => {
   // Set up dnd-kit sensors
   const sensors = useSensors(
@@ -49,6 +51,11 @@ const TaskList = ({
         <div className="flex items-center text-sm text-gray-500">
           <ArrowsUpDownIcon className="h-5 w-5 mr-1" />
           <span>Drag to reorder</span>
+          {isOffline && (
+            <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+              Offline
+            </span>
+          )}
         </div>
       </div>
 
@@ -90,6 +97,8 @@ const TaskList = ({
                   saveEdit={saveEdit}
                   activeId={activeId}
                   isNewTask={newTaskId === task.id}
+                  pendingOperation={pendingOperations[task.id]}
+                  isOffline={isOffline}
                 />
               ))}
             </div>
