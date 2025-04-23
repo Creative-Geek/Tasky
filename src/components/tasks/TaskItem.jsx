@@ -74,7 +74,7 @@ const TaskItem = ({
   // Determine if any item is being dragged (but not this one)
   const isAnyItemDragging = activeId !== null;
 
-  // Determine if this task has a pending operation
+  // Determine if this task has a pending operation (but don't show visual indicators)
   const isPending = !!pendingOperation;
   const hasFailed = isPending && pendingOperation.status === "failed";
 
@@ -144,20 +144,11 @@ const TaskItem = ({
         task.isDone && !isUncompletingTask
           ? "bg-gray-50 border-gray-200"
           : "bg-white border-gray-100"
-      } ${isNewTask || task.isTemp ? "new-task-animation" : ""} ${
-        task.isTemp ? "border-dashed border-gray-300" : ""
-      } ${isDeleting ? "delete-task-animation" : ""}`}
+      } ${isNewTask ? "new-task-animation" : ""} ${
+        isDeleting ? "delete-task-animation" : ""
+      }`}
     >
-      {/* Status indicators that don't affect layout */}
-      {isPending && (
-        <div className="status-indicator status-indicator-pending" />
-      )}
-      {hasFailed && (
-        <div className="status-indicator status-indicator-failed" />
-      )}
-      {task.isTemp && !isPending && !hasFailed && (
-        <div className="status-indicator status-indicator-temp" />
-      )}
+      {/* Status indicators removed to make interaction seamless */}
       {editingTask && editingTask.id === task.id ? (
         <TaskEditForm
           editingTask={editingTask}
@@ -250,52 +241,9 @@ const TaskItem = ({
             </div>
 
             <div className="flex space-x-1 flex-shrink-0 ml-2">
-              {/* Show pending/failed indicators */}
-              {isPending && !hasFailed && (
-                <div className="p-1 text-blue-500 rounded-full">
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                </div>
-              )}
-
-              {hasFailed && (
-                <div className="p-1 text-red-500 rounded-full">
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              )}
-
-              {/* Only show drag handle if not pending and not a temporary task */}
-              {!isPending && !task.isTemp && !isOffline && (
+              {/* Syncing indicators removed to make interaction seamless */}
+              {/* Always show drag handle if not offline */}
+              {!isOffline && (
                 <div
                   {...attributes}
                   {...listeners}
@@ -304,43 +252,37 @@ const TaskItem = ({
                   <ArrowsUpDownIcon className="h-5 w-5" />
                 </div>
               )}
-
-              {/* Only show edit button if not pending and not a temporary task */}
-              {!isPending && !task.isTemp && (
-                <button
-                  onClick={() => startEditing(task)}
-                  disabled={isOffline}
-                  className={`p-1 rounded-full transition-colors ${
-                    isOffline
-                      ? "text-gray-300 cursor-not-allowed"
-                      : "text-gray-400 hover:text-indigo-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <PencilIcon className="h-5 w-5" />
-                </button>
-              )}
-
-              {/* Only show delete button if not pending and not a temporary task */}
-              {!isPending && !task.isTemp && (
-                <button
-                  onClick={() => {
-                    // Start the delete animation
-                    setIsDeleting(true);
-                    // Wait for animation to complete before actually deleting
-                    setTimeout(() => {
-                      handleDeleteTask(task.id);
-                    }, 500); // Match animation duration
-                  }}
-                  disabled={isOffline || isDeleting}
-                  className={`p-1 rounded-full transition-colors ${
-                    isOffline || isDeleting
-                      ? "text-gray-300 cursor-not-allowed"
-                      : "text-gray-400 hover:text-red-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </button>
-              )}
+              {/* Always show edit button */}
+              <button
+                onClick={() => startEditing(task)}
+                disabled={isOffline}
+                className={`p-1 rounded-full transition-colors ${
+                  isOffline
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-400 hover:text-indigo-600 hover:bg-gray-100"
+                }`}
+              >
+                <PencilIcon className="h-5 w-5" />
+              </button>
+              {/* Always show delete button */}
+              <button
+                onClick={() => {
+                  // Start the delete animation
+                  setIsDeleting(true);
+                  // Wait for animation to complete before actually deleting
+                  setTimeout(() => {
+                    handleDeleteTask(task.id);
+                  }, 500); // Match animation duration
+                }}
+                disabled={isOffline || isDeleting}
+                className={`p-1 rounded-full transition-colors ${
+                  isOffline || isDeleting
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-400 hover:text-red-600 hover:bg-gray-100"
+                }`}
+              >
+                <TrashIcon className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>
