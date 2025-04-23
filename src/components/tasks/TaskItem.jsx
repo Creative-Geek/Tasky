@@ -120,8 +120,10 @@ const TaskItem = ({
       style={style}
       data-dragging={isDragging}
       data-any-dragging={isAnyItemDragging ? "true" : "false"}
-      className={`card p-4 transition-colors ${
-        task.isDone ? "bg-gray-50 border-gray-200" : ""
+      className={`card p-4 transition-all duration-300 ease-in-out ${
+        task.isDone && !isUncompletingTask
+          ? "bg-gray-50 border-gray-200"
+          : "bg-white border-gray-100"
       } ${isNewTask ? "new-task-animation" : ""}`}
     >
       {editingTask && editingTask.id === task.id ? (
@@ -141,7 +143,7 @@ const TaskItem = ({
                 onClick={handleTaskCompletion}
                 className="mt-1 flex-shrink-0"
               >
-                {task.isDone ? (
+                {task.isDone || isUncompletingTask ? (
                   <svg
                     className={`h-5 w-5 text-green-500 ${
                       isCompletingTask
@@ -157,9 +159,7 @@ const TaskItem = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     style={
-                      isCompletingTask
-                        ? { strokeDasharray: "100" }
-                        : isUncompletingTask
+                      isCompletingTask || isUncompletingTask
                         ? { strokeDasharray: "100" }
                         : {}
                     }
@@ -174,18 +174,22 @@ const TaskItem = ({
               <div className="min-w-0 flex-grow overflow-hidden">
                 <h3
                   dir="auto"
-                  className={`text-lg font-medium break-words overflow-hidden transition-all ${
-                    task.isDone ? "text-gray-500" : "text-gray-800"
+                  className={`text-lg font-medium break-words overflow-hidden transition-all duration-300 ease-in-out ${
+                    task.isDone && !isUncompletingTask
+                      ? "text-gray-500"
+                      : "text-gray-800"
                   }`}
                 >
-                  {task.isDone ? (
+                  {task.isDone || isUncompletingTask ? (
                     <span
                       className={
                         isCompletingTask
                           ? "strikethrough-animation"
                           : isUncompletingTask
                           ? "unstrikethrough-animation"
-                          : "line-through"
+                          : task.isDone
+                          ? "line-through"
+                          : ""
                       }
                     >
                       {task.title}
@@ -197,8 +201,10 @@ const TaskItem = ({
                 {task.description && (
                   <p
                     dir="auto"
-                    className={`mt-1 text-sm break-words overflow-hidden transition-colors ${
-                      task.isDone ? "text-gray-400" : "text-gray-600"
+                    className={`mt-1 text-sm break-words overflow-hidden transition-all duration-300 ease-in-out ${
+                      task.isDone && !isUncompletingTask
+                        ? "text-gray-400"
+                        : "text-gray-600"
                     }`}
                   >
                     {task.description}
