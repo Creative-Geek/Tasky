@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -21,6 +21,7 @@ const TaskItem = ({
   isNewTask,
 }) => {
   const nodeRef = React.useRef(null);
+  const [editTitleError, setEditTitleError] = useState(false);
 
   const {
     attributes,
@@ -76,6 +77,15 @@ const TaskItem = ({
     zIndex: isDragging ? 10 : 1,
   };
 
+  const handleSaveEdit = () => {
+    if (!editingTask.title || editingTask.title.trim() === "") {
+      setEditTitleError(true); // Set error if title is empty
+      return; // Prevent saving
+    }
+    setEditTitleError(false); // Clear error if title is valid
+    saveEdit(); // Proceed with saving
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -90,7 +100,9 @@ const TaskItem = ({
         <TaskEditForm
           editingTask={editingTask}
           setEditingTask={setEditingTask}
-          saveEdit={saveEdit}
+          saveEdit={handleSaveEdit}
+          titleError={editTitleError}
+          setTitleError={setEditTitleError}
         />
       ) : (
         // View mode
