@@ -3,6 +3,13 @@ app Tasky {
     version: "^0.16.3"
   },
   title: "Tasky",
+  head: [
+    "<meta name='description' content='A simple yet effective task management application with drag & drop reordering, optimistic UI updates, and secure user authentication.' />",
+    "<meta property='og:title' content='Tasky - Task Management Made Simple' />",
+    "<meta property='og:description' content='Organize your tasks with Tasky - a responsive task management app with drag & drop reordering and real-time updates.' />",
+    "<meta property='og:type' content='website' />",
+    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />"
+  ],
   client: {
     rootComponent: import { Layout } from "@src/Layout.jsx",
   },
@@ -16,7 +23,7 @@ app Tasky {
     // Register the hook
     onBeforeSignup: import { onBeforeSignup } from "@src/auth/hooks.js"
   },
-  
+
 }
 
 route LoginRoute { path: "/login", to: LoginPage }
