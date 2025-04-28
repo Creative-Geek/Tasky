@@ -535,7 +535,12 @@ const MainPage = () => {
         {/* Offline indicator removed to make interaction seamless */}
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">My Tasks</h1>
+          <h1
+            className="text-2xl font-bold mb-6"
+            style={{ color: "var(--text-color)" }}
+          >
+            My Tasks
+          </h1>
 
           {showSkeletons ? (
             <SkeletonLoader type="form" count={1} />
@@ -556,9 +561,17 @@ const MainPage = () => {
 
         {/* Flyout notification for pending operations */}
         {Object.keys(pendingOperations).length > 0 && !hideSyncNotification && (
-          <div className="fixed bottom-4 right-4 p-3 bg-blue-50 rounded-md shadow-lg border border-blue-100 flex items-center z-50 animate-fade-in-up">
+          <div
+            className="fixed bottom-4 right-4 p-3 rounded-md shadow-lg border flex items-center z-50 animate-fade-in-up"
+            style={{
+              backgroundColor: "var(--card-color)",
+              borderColor: "var(--primary-color)",
+              borderWidth: "1px",
+            }}
+          >
             <svg
-              className="animate-spin h-5 w-5 text-blue-500 mr-2"
+              className="animate-spin h-5 w-5 mr-2"
+              style={{ color: "var(--primary-color)" }}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -577,13 +590,17 @@ const MainPage = () => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <span className="text-sm text-blue-700 mr-2">
+            <span
+              className="text-sm mr-2"
+              style={{ color: "var(--text-color)" }}
+            >
               Syncing changes... ({Object.keys(pendingOperations).length}{" "}
               pending)
             </span>
             <button
               onClick={() => setHideSyncNotification(true)}
-              className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
+              className="ml-2 transition-colors"
+              style={{ color: "var(--primary-color)" }}
               aria-label="Close notification"
             >
               <svg
@@ -628,14 +645,22 @@ const MainPage = () => {
           (op) => op.status === "failed"
         ) &&
           !hideErrorNotification && (
-            <div className="fixed bottom-4 left-4 p-3 bg-red-50 border border-red-100 rounded-md shadow-lg z-50 animate-fade-in-up max-w-xs">
+            <div
+              className="fixed bottom-4 left-4 p-3 border rounded-md shadow-lg z-50 animate-fade-in-up max-w-xs"
+              style={{
+                backgroundColor: "var(--card-color)",
+                borderColor: "var(--error-color)",
+                borderWidth: "1px",
+              }}
+            >
               <div className="flex justify-between items-start mb-2">
-                <p className="text-sm text-red-700">
+                <p className="text-sm" style={{ color: "var(--error-color)" }}>
                   Some changes couldn't be saved. Please try again.
                 </p>
                 <button
                   onClick={() => setHideErrorNotification(true)}
-                  className="ml-2 text-red-500 hover:text-red-700 transition-colors"
+                  className="ml-2 transition-colors"
+                  style={{ color: "var(--error-color)" }}
                   aria-label="Close notification"
                 >
                   <svg
@@ -658,7 +683,11 @@ const MainPage = () => {
                   syncPendingOperations();
                   setHideErrorNotification(false);
                 }}
-                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                className="px-3 py-1 text-sm rounded transition-colors"
+                style={{
+                  backgroundColor: "var(--error-color)",
+                  color: "white",
+                }}
               >
                 Retry
               </button>
