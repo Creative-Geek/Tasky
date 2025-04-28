@@ -18,12 +18,15 @@ const TaskEditForm = ({
           dir="auto"
           type="text"
           placeholder={titleError ? "Title is required" : "Task title"} // Conditional placeholder
-          className={`input w-full transition-colors duration-300 ease-in-out ${
-            // Add transition classes and conditional red border
-            titleError
-              ? "border border-red-500 bg-red-50 focus:border-red-500"
-              : "focus:border-indigo-500"
-          }`}
+          className="w-full transition-colors duration-300 ease-in-out px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2"
+          style={{
+            backgroundColor: "var(--card-color)",
+            color: "var(--text-color)",
+            borderColor: titleError
+              ? "var(--error-color)"
+              : "var(--border-color)",
+            boxShadow: titleError ? "0 0 0 1px var(--error-color)" : "none",
+          }}
           value={editingTask.title}
           maxLength={MAX_TITLE_LENGTH}
           onChange={(e) => {
@@ -36,14 +39,22 @@ const TaskEditForm = ({
             }
           }}
         />
-        <div className="flex justify-end text-xs text-gray-500">
+        <div
+          className="flex justify-end text-xs"
+          style={{ color: "var(--text-color)", opacity: 0.6 }}
+        >
           {editingTask.title.length}/{MAX_TITLE_LENGTH} characters
         </div>
       </div>
       <div className="space-y-1">
         <textarea
           dir="auto"
-          className="input w-full min-h-[60px] transition-colors preserve-line-breaks"
+          className="w-full min-h-[60px] transition-colors preserve-line-breaks px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2"
+          style={{
+            backgroundColor: "var(--card-color)",
+            color: "var(--text-color)",
+            borderColor: "var(--border-color)",
+          }}
           value={editingTask.description}
           maxLength={MAX_DESCRIPTION_LENGTH}
           onChange={(e) =>
@@ -53,14 +64,21 @@ const TaskEditForm = ({
             })
           }
         />
-        <div className="flex justify-end text-xs text-gray-500">
+        <div
+          className="flex justify-end text-xs"
+          style={{ color: "var(--text-color)", opacity: 0.6 }}
+        >
           {editingTask.description.length}/{MAX_DESCRIPTION_LENGTH} characters
         </div>
       </div>
       <div className="flex justify-end mt-2 space-x-2">
         <button
           onClick={() => setEditingTask(null)}
-          className="btn bg-gray-200 hover:bg-gray-300 text-gray-700"
+          className="px-4 py-2 rounded-md transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
+          style={{
+            backgroundColor: "var(--secondary-color)",
+            color: "var(--text-color)",
+          }}
         >
           Cancel
         </button>

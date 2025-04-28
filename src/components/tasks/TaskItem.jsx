@@ -137,16 +137,19 @@ const TaskItem = ({
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        backgroundColor:
+          task.isDone && !isUncompletingTask
+            ? "var(--secondary-color)"
+            : "var(--card-color)",
+        borderColor: "var(--border-color)",
+      }}
       data-dragging={isDragging}
       data-any-dragging={isAnyItemDragging ? "true" : "false"}
       className={`card p-4 transition-all duration-300 ease-in-out ${
-        task.isDone && !isUncompletingTask
-          ? "bg-gray-50 border-gray-200"
-          : "bg-white border-gray-100"
-      } ${isNewTask ? "new-task-animation" : ""} ${
-        isDeleting ? "delete-task-animation" : ""
-      }`}
+        isNewTask ? "new-task-animation" : ""
+      } ${isDeleting ? "delete-task-animation" : ""}`}
     >
       {/* Status indicators removed to make interaction seamless */}
       {editingTask && editingTask.id === task.id ? (
@@ -201,11 +204,14 @@ const TaskItem = ({
               <div className="min-w-0 flex-grow overflow-hidden">
                 <h3
                   dir="auto"
-                  className={`text-lg font-medium break-words overflow-hidden transition-all duration-300 ease-in-out ${
-                    task.isDone && !isUncompletingTask
-                      ? "text-gray-500"
-                      : "text-gray-800"
-                  }`}
+                  className="text-lg font-medium break-words overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{
+                    color:
+                      task.isDone && !isUncompletingTask
+                        ? "var(--text-color)"
+                        : "var(--text-color)",
+                    opacity: task.isDone && !isUncompletingTask ? 0.6 : 1,
+                  }}
                 >
                   {task.isDone || isUncompletingTask ? (
                     <span
@@ -228,11 +234,11 @@ const TaskItem = ({
                 {task.description && (
                   <p
                     dir="auto"
-                    className={`mt-1 text-sm break-words overflow-hidden preserve-line-breaks transition-all duration-300 ease-in-out ${
-                      task.isDone && !isUncompletingTask
-                        ? "text-gray-400"
-                        : "text-gray-600"
-                    }`}
+                    className="mt-1 text-sm break-words overflow-hidden preserve-line-breaks transition-all duration-300 ease-in-out"
+                    style={{
+                      color: "var(--text-color)",
+                      opacity: task.isDone && !isUncompletingTask ? 0.5 : 0.8,
+                    }}
                   >
                     {task.description}
                   </p>
@@ -247,7 +253,13 @@ const TaskItem = ({
                 <div
                   {...attributes}
                   {...listeners}
-                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-move transition-colors"
+                  className="p-1 rounded-full cursor-move transition-colors"
+                  style={{
+                    color: "var(--text-color)",
+                    opacity: 0.5,
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
+                  onMouseOut={(e) => (e.currentTarget.style.opacity = "0.5")}
                 >
                   <ArrowsUpDownIcon className="h-5 w-5" />
                 </div>
@@ -256,11 +268,18 @@ const TaskItem = ({
               <button
                 onClick={() => startEditing(task)}
                 disabled={isOffline}
-                className={`p-1 rounded-full transition-colors ${
-                  isOffline
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-400 hover:text-indigo-600 hover:bg-gray-100"
-                }`}
+                className="p-1 rounded-full transition-colors"
+                style={{
+                  color: isOffline ? "var(--text-color)" : "var(--text-color)",
+                  opacity: isOffline ? 0.3 : 0.5,
+                  cursor: isOffline ? "not-allowed" : "pointer",
+                }}
+                onMouseOver={(e) =>
+                  !isOffline && (e.currentTarget.style.opacity = "0.8")
+                }
+                onMouseOut={(e) =>
+                  !isOffline && (e.currentTarget.style.opacity = "0.5")
+                }
               >
                 <PencilIcon className="h-5 w-5" />
               </button>
@@ -275,11 +294,27 @@ const TaskItem = ({
                   }, 500); // Match animation duration
                 }}
                 disabled={isOffline || isDeleting}
-                className={`p-1 rounded-full transition-colors ${
-                  isOffline || isDeleting
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-400 hover:text-red-600 hover:bg-gray-100"
-                }`}
+                className="p-1 rounded-full transition-colors"
+                style={{
+                  color:
+                    isOffline || isDeleting
+                      ? "var(--text-color)"
+                      : "var(--text-color)",
+                  opacity: isOffline || isDeleting ? 0.3 : 0.5,
+                  cursor: isOffline || isDeleting ? "not-allowed" : "pointer",
+                }}
+                onMouseOver={(e) =>
+                  !isOffline &&
+                  !isDeleting &&
+                  ((e.currentTarget.style.opacity = "0.8"),
+                  (e.currentTarget.style.color = "#ef4444"))
+                }
+                onMouseOut={(e) =>
+                  !isOffline &&
+                  !isDeleting &&
+                  ((e.currentTarget.style.opacity = "0.5"),
+                  (e.currentTarget.style.color = "var(--text-color)"))
+                }
               >
                 <TrashIcon className="h-5 w-5" />
               </button>
