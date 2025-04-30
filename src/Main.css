@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme variables */
   --primary-color: #6366f1;
   --primary-hover: #4f46e5;
   --secondary-color: #f3f4f6;
@@ -20,27 +19,9 @@
   --auth-form-submit-button-text-color: #ffffff;
 }
 
-/* Dark theme variables */
-.dark {
-  --primary-color: #818cf8; /* Indigo-400 - slightly lighter for dark mode */
-  --primary-hover: #6366f1; /* Indigo-500 */
-  --secondary-color: #1f2937; /* Gray-800 */
-  --text-color: #f3f4f6; /* Gray-100 */
-  --bg-color: #111827; /* Gray-900 */
-  --card-color: #1f2937; /* Gray-800 */
-  --border-color: #374151; /* Gray-700 */
-
-  /* Auth form variables for dark mode */
-  --auth-form-brand: var(--primary-color);
-  --auth-form-brand-accent: var(--primary-hover);
-  --auth-form-submit-button-text-color: #ffffff;
-}
-
 @layer base {
   body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    @apply bg-gray-50 text-gray-800;
   }
 }
 
@@ -58,22 +39,11 @@
   }
 
   .input {
-    @apply px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2;
-    background-color: var(--card-color);
-    color: var(--text-color);
-    border-color: var(--border-color);
-  }
-
-  .input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-color);
+    @apply px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
   }
 
   .card {
-    background-color: var(--card-color);
-    border-color: var(--border-color);
-    @apply rounded-lg shadow overflow-hidden border;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    @apply bg-white rounded-lg shadow border border-gray-100 overflow-hidden;
   }
 
   /* Simple touch handling for drag and drop */

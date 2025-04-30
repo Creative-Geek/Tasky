@@ -77,27 +77,12 @@ const TaskList = ({
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h2
-          className="text-xl font-semibold"
-          style={{ color: "var(--text-color)" }}
-        >
-          Task List
-        </h2>
-        <div
-          className="flex items-center text-sm"
-          style={{ color: "var(--text-color)", opacity: 0.7 }}
-        >
+        <h2 className="text-xl font-semibold text-gray-700">Task List</h2>
+        <div className="flex items-center text-sm text-gray-500">
           <ArrowsUpDownIcon className="h-5 w-5 mr-1" />
           <span>Drag to reorder</span>
           {isOffline && (
-            <span
-              className="ml-2 px-2 py-0.5 text-xs rounded-full"
-              style={{
-                backgroundColor: "var(--primary-color)",
-                color: "var(--card-color)",
-                opacity: 0.8,
-              }}
-            >
+            <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">
               Offline
             </span>
           )}

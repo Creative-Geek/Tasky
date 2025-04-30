@@ -10,7 +10,7 @@ export default function Signup() {
   // Redirect to home page if user is already logged in
   useEffect(() => {
     if (user && !isLoading) {
-      navigate("/");
+      navigate('/');
     }
   }, [user, isLoading, navigate]);
 
@@ -19,10 +19,7 @@ export default function Signup() {
     return (
       <div className="w-full h-full">
         <div className="min-w-full min-h-[75vh] flex items-center justify-center">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
-            style={{ borderColor: "var(--primary-color)" }}
-          ></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
         </div>
       </div>
     );
@@ -34,29 +31,15 @@ export default function Signup() {
         <div className="w-full max-w-md">
           <div className="card p-8">
             <div className="text-center mb-6">
-              <div
-                className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4"
-                style={{
-                  backgroundColor: "var(--primary-color)",
-                  opacity: 0.2,
-                }}
-              >
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 mb-4">
                 <div className="h-8 w-8 bg-indigo-500 rounded-md flex items-center justify-center">
                   <span className="text-white font-bold">T</span>
                 </div>
               </div>
-              <h1
-                className="text-2xl font-bold"
-                style={{ color: "var(--text-color)" }}
-              >
+              <h1 className="text-2xl font-bold text-gray-800">
                 Create account
               </h1>
-              <p
-                className="mt-1"
-                style={{ color: "var(--text-color)", opacity: 0.7 }}
-              >
-                Get started with Tasky
-              </p>
+              <p className="text-gray-600 mt-1">Get started with Tasky</p>
             </div>
 
             <SignupForm
@@ -65,26 +48,15 @@ export default function Signup() {
                   brand: "var(--auth-form-brand)",
                   brandAccent: "var(--auth-form-brand-accent)",
                   submitButtonText: "var(--auth-form-submit-button-text-color)",
-                  inputBackground: "var(--card-color)",
-                  inputText: "var(--text-color)",
-                  inputBorder: "var(--border-color)",
-                  inputLabelText: "var(--text-color)",
-                  anchorTextColor: "var(--primary-color)",
-                  messageText: "var(--text-color)",
-                  messageTextDanger: "var(--error-color)",
                 },
               }}
             />
 
-            <div
-              className="mt-6 text-center"
-              style={{ color: "var(--text-color)", opacity: 0.7 }}
-            >
+            <div className="mt-6 text-center text-gray-600">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-medium"
-                style={{ color: "var(--primary-color)" }}
+                className="text-indigo-600 hover:text-indigo-800 font-medium"
               >
                 Sign in
               </Link>

@@ -18,27 +18,19 @@ const TaskForm = ({
 }) => {
   return (
     <div className="card p-4">
-      <h2
-        className="text-lg font-medium mb-3"
-        style={{ color: "var(--text-color)" }}
-      >
-        Add New Task
-      </h2>
+      <h2 className="text-lg font-medium text-gray-700 mb-3">Add New Task</h2>
       <div className="space-y-3">
         <div className="space-y-1">
           <input
             dir="auto"
             type="text"
             placeholder={titleError ? "Title is required" : "Task title"} // Conditional placeholder
-            className="w-full transition-colors duration-300 ease-in-out px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2"
-            style={{
-              backgroundColor: "var(--card-color)",
-              color: "var(--text-color)",
-              borderColor: titleError
-                ? "var(--error-color)"
-                : "var(--border-color)",
-              boxShadow: titleError ? "0 0 0 1px var(--error-color)" : "none",
-            }}
+            className={`input w-full transition-colors duration-300 ease-in-out ${
+              // Add transition classes
+              titleError
+                ? "border border-red-500 bg-red-50 focus:border-red-500"
+                : "focus:border-indigo-500"
+            }`} // Conditional red border
             value={newTaskTitle}
             maxLength={MAX_TITLE_LENGTH}
             onChange={(e) => {
@@ -57,12 +49,7 @@ const TaskForm = ({
           <textarea
             dir="auto"
             placeholder="Task description (optional)"
-            className="w-full min-h-[80px] transition-colors px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2"
-            style={{
-              backgroundColor: "var(--card-color)",
-              color: "var(--text-color)",
-              borderColor: "var(--border-color)",
-            }}
+            className="input w-full min-h-[80px] transition-colors"
             value={newTaskDescription}
             maxLength={MAX_DESCRIPTION_LENGTH}
             onChange={(e) => setNewTaskDescription(e.target.value)}
