@@ -3,18 +3,12 @@ import { useAuth, logout } from "wasp/client/auth";
 import { Outlet } from "react-router-dom";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { useState, useEffect } from "react";
-import { generateFavicon } from "./favicon";
+import { useState } from "react";
 import "./Main.css";
 
 export const Layout = () => {
   const { data: user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Generate favicon when component mounts
-  useEffect(() => {
-    generateFavicon();
-  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -96,9 +90,7 @@ export const Layout = () => {
 
       <footer className="border-t border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-4 text-center">
-          <p className="text-gray-500 text-sm mb-2">
-            Tasky — Powered by Wasp
-          </p>
+          <p className="text-gray-500 text-sm mb-2">Tasky — Powered by Wasp</p>
           <a
             href="https://github.com/Creative-Geek/Tasky"
             target="_blank"
