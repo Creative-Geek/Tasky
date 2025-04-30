@@ -59,6 +59,11 @@
     hyphens: auto;
   }
 
+  /* Preserve line breaks in task descriptions */
+  .preserve-line-breaks {
+    white-space: pre-line;
+  }
+
   /* Ensure dragged items maintain their width */
   [data-dragging="true"] {
     width: var(--original-width, auto) !important;

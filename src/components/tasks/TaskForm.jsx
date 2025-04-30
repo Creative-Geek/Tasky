@@ -49,7 +49,7 @@ const TaskForm = ({
           <textarea
             dir="auto"
             placeholder="Task description (optional)"
-            className="input w-full min-h-[80px] transition-colors"
+            className="input w-full min-h-[80px] transition-colors preserve-line-breaks"
             value={newTaskDescription}
             maxLength={MAX_DESCRIPTION_LENGTH}
             onChange={(e) => setNewTaskDescription(e.target.value)}

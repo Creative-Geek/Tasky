@@ -43,7 +43,7 @@ const TaskEditForm = ({
       <div className="space-y-1">
         <textarea
           dir="auto"
-          className="input w-full min-h-[60px] transition-colors"
+          className="input w-full min-h-[60px] transition-colors preserve-line-breaks"
           value={editingTask.description}
           maxLength={MAX_DESCRIPTION_LENGTH}
           onChange={(e) =>

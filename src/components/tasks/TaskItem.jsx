@@ -228,7 +228,7 @@ const TaskItem = ({
                 {task.description && (
                   <p
                     dir="auto"
-                    className={`mt-1 text-sm break-words overflow-hidden transition-all duration-300 ease-in-out ${
+                    className={`mt-1 text-sm break-words overflow-hidden preserve-line-breaks transition-all duration-300 ease-in-out ${
                       task.isDone && !isUncompletingTask
                         ? "text-gray-400"
                         : "text-gray-600"
