@@ -35,11 +35,8 @@ export default function Signup() {
           <div className="card p-8">
             <div className="text-center mb-6">
               <div
-                className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4"
-                style={{
-                  backgroundColor: "var(--primary-color)",
-                  opacity: 0.2,
-                }}
+                className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-indigo-100 dark:bg-primary"
+                style={{ opacity: 1 }}
               >
                 <div className="h-8 w-8 bg-indigo-500 rounded-md flex items-center justify-center">
                   <span className="text-white font-bold">T</span>
