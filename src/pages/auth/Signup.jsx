@@ -66,7 +66,8 @@ export default function Signup() {
                   brandAccent: "var(--auth-form-brand-accent)",
                   submitButtonText: "var(--auth-form-submit-button-text-color)",
                   inputBackground: "var(--card-color)",
-                  inputText: "var(--text-color)",
+                  inputText:
+                    "#000000" /* Black text for both light and dark mode */,
                   inputBorder: "var(--border-color)",
                   inputLabelText: "var(--text-color)",
                   anchorTextColor: "var(--primary-color)",
