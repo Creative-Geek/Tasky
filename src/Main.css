@@ -336,4 +336,13 @@
   }
 
   /* Status indicators for tasks removed to make interaction seamless */
+
+  /* Fix for login/signup form input text color */
+  /* Target auth form inputs specifically with high specificity */
+  .card form input,
+  .card form input[type="text"],
+  .card form input[type="password"],
+  .card form input[type="email"] {
+    color: #000000 !important; /* Force black text in auth form inputs */
+  }
 }
