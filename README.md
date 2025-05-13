@@ -83,12 +83,17 @@ A simple yet effective task management application built with the Wasp full-stac
 
 ## Deployment
 
-The project includes a `deploy_client.sh` script as an example for building the client bundle and preparing it for deployment, specifically targeting [Railway](https://railway.app/).
+The project includes an `update_project.sh` script for building and deploying both the backend and frontend:
 
 - The script builds the Wasp project (`wasp build`).
-- It then navigates into the web-app build directory, installs dependencies, and builds the React frontend (`npm run build`).
-- It prepares a Dockerfile using `pierrezemb/gostatic` to serve the static build output.
-- It assumes the `REACT_APP_API_URL` environment variable is set during the client build process.
-- Finally, it uses the Railway CLI (`railway up`) to deploy.
+- For the backend, it copies the built files to a separate backend repository, commits, and pushes the changes.
+- For the frontend, it navigates into the web-app build directory, installs dependencies, and builds the React frontend with the provided backend URL.
+- It then deploys the frontend to Cloudflare Pages using Wrangler CLI.
 
-**Note:** For a full production deployment, you would also need to deploy the Wasp backend server and configure the `REACT_APP_API_URL` accordingly to point to your deployed backend. Refer to the [Wasp deployment documentation](https://wasp-lang.dev/docs/deploying) for more comprehensive guides.
+**Note:** The deployment script expects:
+
+1. A separate git repository for the backend at the location specified in the script
+2. A Cloudflare Pages project already set up with the name specified in the script
+3. The backend URL to be provided as an argument or set as the `TASKY_BACKEND_URL` environment variable
+
+For more information on Wasp deployments, refer to the [Wasp deployment documentation](https://wasp-lang.dev/docs/deploying).
