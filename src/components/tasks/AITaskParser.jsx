@@ -21,14 +21,25 @@ const AITaskParser = ({
   const [editedTasks, setEditedTasks] = useState([]);
   const modalRef = useRef(null);
   const textareaRef = useRef(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [animateTaskSection, setAnimateTaskSection] = useState(false);
 
   // Get the parseTaskWithAI action
-  const { data: parsedData, isLoading, error: parseError } = useAction(parseTaskWithAI);
+  const {
+    data: parsedData,
+    isLoading,
+    error: parseError,
+  } = useAction(parseTaskWithAI);
 
   // Initialize edited tasks when generated tasks change
   useEffect(() => {
     if (generatedTasks.length > 0) {
-      setEditedTasks(generatedTasks.map(task => ({ ...task })));
+      setEditedTasks(generatedTasks.map((task) => ({ ...task })));
+      setAnimateTaskSection(true); // Trigger animation when tasks are generated
+      const timer = setTimeout(() => setAnimateTaskSection(false), 500); // Duration of pulse-once
+      return () => clearTimeout(timer);
+    } else {
+      setEditedTasks([]); // Clear edited tasks if no generated tasks
     }
   }, [generatedTasks]);
 
@@ -41,50 +52,62 @@ const AITaskParser = ({
     }
   }, [isOpen]);
 
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen && !isClosing) {
+      // Ensure reset only happens after closing animation
+      setInputText("");
+      setError(null);
+      setGeneratedTasks([]);
+      setEditedTasks([]);
+      setIsProcessing(false);
+      setAnimateTaskSection(false);
+    }
+  }, [isOpen, isClosing]);
+
+  const handleActualClose = () => {
+    setIsClosing(false);
+    onClose(); // Call the original onClose prop
+  };
+
+  const triggerClose = () => {
+    setIsClosing(true);
+    setTimeout(handleActualClose, 300); // Match animation duration
+  };
+
   // Handle click outside to close the modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+        triggerClose();
       }
     };
 
-    if (isOpen) {
+    if (isOpen && !isClosing) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isClosing]);
 
   // Handle escape key to close the modal
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
-        onClose();
+        triggerClose();
       }
     };
 
-    if (isOpen) {
+    if (isOpen && !isClosing) {
       document.addEventListener("keydown", handleEscKey);
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscKey);
     };
-  }, [isOpen, onClose]);
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setInputText("");
-      setError(null);
-      setGeneratedTasks([]);
-      setEditedTasks([]);
-      setIsProcessing(false);
-    }
-  }, [isOpen]);
+  }, [isOpen, onClose, isClosing]);
 
   // Handle parse button click
   const handleParse = async () => {
@@ -96,6 +119,7 @@ const AITaskParser = ({
     setError(null);
     setIsProcessing(true);
     setGeneratedTasks([]);
+    setAnimateTaskSection(false); // Reset animation state before new parse
 
     try {
       const result = await parseTaskWithAI({ text: inputText });
@@ -128,21 +152,27 @@ const AITaskParser = ({
   // Handle save button click
   const handleSave = () => {
     // Filter out tasks with empty titles
-    const validTasks = editedTasks.filter(task => task.title.trim() !== "");
-    
+    const validTasks = editedTasks.filter((task) => task.title.trim() !== "");
+
     if (validTasks.length === 0) {
       setError("At least one task must have a title");
       return;
     }
-    
+
     onTasksGenerated(validTasks);
-    onClose();
+    triggerClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
+
+  const modalAnimationClass = isClosing
+    ? "animate-fade-out-down"
+    : "animate-fade-in-up";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in-up">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${modalAnimationClass}`}
+    >
       <div
         ref={modalRef}
         className="w-full max-w-2xl max-h-[90vh] overflow-y-auto card p-5"
@@ -155,7 +185,7 @@ const AITaskParser = ({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Parse Tasks with AI</h2>
           <button
-            onClick={onClose}
+            onClick={triggerClose}
             className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             aria-label="Close"
           >
@@ -165,9 +195,7 @@ const AITaskParser = ({
 
         {/* Input section */}
         <div className="mb-4">
-          <label className="block mb-2 font-medium">
-            Paste message text:
-          </label>
+          <label className="block mb-2 font-medium">Paste message text:</label>
           <textarea
             ref={textareaRef}
             value={inputText}
@@ -210,7 +238,9 @@ const AITaskParser = ({
 
         {/* Generated tasks preview */}
         {editedTasks.length > 0 && (
-          <div className="mt-4">
+          <div
+            className={`mt-4 ${animateTaskSection ? "animate-pulse-once" : ""}`}
+          >
             <h3 className="text-lg font-medium mb-3">Generated Tasks</h3>
             <div className="space-y-4">
               {editedTasks.map((task, index) => (
@@ -256,7 +286,8 @@ const AITaskParser = ({
                         }}
                       />
                       <div className="flex justify-end text-xs text-gray-500">
-                        {task.description.length}/{MAX_DESCRIPTION_LENGTH} characters
+                        {task.description.length}/{MAX_DESCRIPTION_LENGTH}{" "}
+                        characters
                       </div>
                     </div>
                   </div>
@@ -270,7 +301,7 @@ const AITaskParser = ({
         {editedTasks.length > 0 && (
           <div className="flex justify-end space-x-3 mt-6">
             <button
-              onClick={onClose}
+              onClick={triggerClose}
               className="btn"
               style={{
                 backgroundColor: "var(--card-color)",
