@@ -7,12 +7,14 @@ import {
   updateTask,
   deleteTask,
   reorderTasks,
+  parseTaskWithAI,
 } from "wasp/client/operations";
 import { arrayMove } from "@dnd-kit/sortable";
 
 // Import components
 import TaskForm from "../components/tasks/TaskForm";
 import TaskList from "../components/tasks/TaskList";
+import AITaskParser from "../components/tasks/AITaskParser";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import ErrorBoundary from "../components/common/ErrorBoundary";
 
@@ -122,6 +124,7 @@ const MainPage = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [titleError, setTitleError] = useState(false); // Add state for title error
+  const [isAIParserOpen, setIsAIParserOpen] = useState(false);
 
   // Function to sync pending operations
   const syncPendingOperations = useCallback(async () => {
@@ -523,6 +526,74 @@ const MainPage = () => {
     }
   };
 
+  // Handle creating tasks from AI parser
+  const handleAITasksGenerated = (tasks) => {
+    if (!tasks || tasks.length === 0) return;
+
+    // Process tasks one by one
+    tasks.forEach((task, index) => {
+      // Add a small delay between task creations for better UX
+      setTimeout(() => {
+        // Generate a temporary ID for the new task
+        const tempId = `temp-${Date.now()}-${index}`;
+
+        // Create a temporary task for optimistic UI update
+        const tempTask = {
+          id: tempId,
+          title: task.title,
+          description: task.description,
+          isDone: false,
+          position: 0,
+          isTemp: true,
+        };
+
+        // Optimistically update the UI
+        setLocalTasks((prevTasks) => [tempTask, ...prevTasks]);
+        setNewTaskId(tempId);
+
+        // Track this operation as pending
+        setPendingOperations((prev) => ({
+          ...prev,
+          [tempId]: { type: "create", status: "pending" },
+        }));
+
+        // Use the request queue to handle the API call
+        requestQueue.enqueue(
+          () =>
+            createTaskFn({
+              title: tempTask.title,
+              description: tempTask.description,
+            }),
+          {
+            id: `create-${tempId}`,
+            batch: false, // Don't batch create operations
+            priority: 1, // High priority
+            onSuccess: (newTask) => {
+              // Replace the temporary task with the real one without triggering animation again
+              setLocalTasks((prev) =>
+                prev.map((t) => (t.id === tempId ? { ...newTask } : t))
+              );
+              // Mark operation as complete
+              setPendingOperations((prev) => {
+                const updated = { ...prev };
+                delete updated[tempId];
+                return updated;
+              });
+            },
+            onError: (error) => {
+              // Mark operation as failed
+              setPendingOperations((prev) => ({
+                ...prev,
+                [tempId]: { type: "create", status: "failed", error },
+              }));
+              console.error("Error creating task:", error);
+            },
+          }
+        );
+      }, index * 300); // Stagger task creation by 300ms
+    });
+  };
+
   return (
     <ErrorBoundary
       errorTitle="Something went wrong loading your tasks"
@@ -535,12 +606,39 @@ const MainPage = () => {
         {/* Offline indicator removed to make interaction seamless */}
 
         <div className="mb-8">
-          <h1
-            className="text-2xl font-bold mb-6"
-            style={{ color: "var(--text-color)" }}
-          >
-            My Tasks
-          </h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1
+              className="text-2xl font-bold"
+              style={{ color: "var(--text-color)" }}
+            >
+              My Tasks
+            </h1>
+
+            <button
+              onClick={() => setIsAIParserOpen(true)}
+              className={`btn flex items-center ${
+                isOffline
+                  ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                  : "btn-primary"
+              }`}
+              disabled={isOffline}
+            >
+              <svg
+                className="h-5 w-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
+              </svg>
+              Parse with AI
+            </button>
+          </div>
 
           {showSkeletons ? (
             <SkeletonLoader type="form" count={1} />
@@ -558,6 +656,14 @@ const MainPage = () => {
             />
           )}
         </div>
+
+        {/* AI Task Parser Modal */}
+        <AITaskParser
+          isOpen={isAIParserOpen}
+          onClose={() => setIsAIParserOpen(false)}
+          onTasksGenerated={handleAITasksGenerated}
+          isOffline={isOffline}
+        />
 
         {/* Flyout notification for pending operations */}
         {Object.keys(pendingOperations).length > 0 && !hideSyncNotification && (

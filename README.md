@@ -15,9 +15,9 @@ A simple yet effective task management application built with the Wasp full-stac
 - **Non-disruptive Notifications:** Flyout notifications for syncing status that don't shift the layout.
 - **Input Validation:** Length limits for task titles and descriptions.
 
-## Coming Soon
+## Key Features
 
-- **AI-Powered Task Creation:** Add or update tasks by simply copying a message from a colleague. The AI will automatically parse the message and create a properly formatted task with title, description, and other relevant details. This feature will save time by eliminating manual task creation from communication threads and ensure important details aren't missed.
+- **AI-Powered Task Creation:** Add or update tasks by simply copying a message from a colleague. The AI will automatically parse the message and create a properly formatted task with title, description, and other relevant details. This feature saves time by eliminating manual task creation from communication threads and ensures important details aren't missed.
 - **Enhanced SEO Optimization:** Improved metadata and static asset serving for better search engine visibility and performance.
 
 ## Tech Stack
@@ -53,13 +53,14 @@ A simple yet effective task management application built with the Wasp full-stac
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env.server` file in the root of the project and add your database connection URL:
+    Create a `.env.server` file in the root of the project and add your database connection URL and OpenAI API key:
 
     ```env
     DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+    OPENAI_API_KEY="your-openai-api-key"
     ```
 
-    Replace `USER`, `PASSWORD`, `HOST`, `PORT`, and `DATABASE` with your actual database credentials.
+    Replace `USER`, `PASSWORD`, `HOST`, `PORT`, and `DATABASE` with your actual database credentials, and `your-openai-api-key` with your OpenAI API key. The OpenAI API key is required for the AI Task Parser feature.
 
 4.  **Run database migrations:**
     This command applies the necessary database schema changes defined in `schema.prisma`.

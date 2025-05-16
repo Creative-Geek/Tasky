@@ -60,6 +60,11 @@ action reorderTasks {
   entities: [Task]
 }
 
+action parseTaskWithAI {
+  fn: import { parseTaskWithAI } from "@src/actions.js",
+  entities: [Task]
+}
+
 query getTasks {
   fn: import { getTasks } from "@src/queries.js",
   entities: [Task]
