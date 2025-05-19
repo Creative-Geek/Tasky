@@ -48,6 +48,9 @@ const MainPage = () => {
   const [hideErrorNotification, setHideErrorNotification] = useState(false);
   // Track retry attempts
   const retryCount = useRef(0);
+  // State for showing booting message
+  const [showBootingMessage, setShowBootingMessage] = useState(false);
+  const bootingMessageTimeoutRef = useRef(null);
 
   // Set up online/offline event listeners
   useEffect(() => {
@@ -76,6 +79,10 @@ const MainPage = () => {
       setLocalTasks(queryTasks);
       // Hide skeleton loaders after data is loaded
       setShowSkeletons(false);
+      setShowBootingMessage(false); // Hide booting message when data loads
+      if (bootingMessageTimeoutRef.current) {
+        clearTimeout(bootingMessageTimeoutRef.current);
+      }
     }
   }, [queryTasks]);
 
@@ -83,13 +90,31 @@ const MainPage = () => {
   useEffect(() => {
     if (isLoading) {
       setShowSkeletons(true);
+      // Set a timeout to show the booting message if loading takes too long
+      bootingMessageTimeoutRef.current = setTimeout(() => {
+        if (isLoading) {
+          // Check again if still loading
+          setShowBootingMessage(true);
+        }
+      }, 5000);
     } else {
       // Add a small delay before hiding skeletons for a smoother transition
       const timer = setTimeout(() => {
         setShowSkeletons(false);
       }, 300);
+      setShowBootingMessage(false); // Hide booting message when loading finishes
+      if (bootingMessageTimeoutRef.current) {
+        clearTimeout(bootingMessageTimeoutRef.current);
+      }
       return () => clearTimeout(timer);
     }
+
+    // Cleanup timeout on unmount or if isLoading changes
+    return () => {
+      if (bootingMessageTimeoutRef.current) {
+        clearTimeout(bootingMessageTimeoutRef.current);
+      }
+    };
   }, [isLoading]);
 
   // Reset notification visibility when operations change
@@ -727,7 +752,17 @@ const MainPage = () => {
         )}
 
         {isLoading && showSkeletons ? (
-          <SkeletonLoader type="task" count={5} />
+          <>
+            <SkeletonLoader type="task" count={5} />
+            {showBootingMessage && (
+              <p
+                className="text-center text-sm mt-4"
+                style={{ color: "var(--text-color-secondary)" }}
+              >
+                Booting the server, this might take a moment...
+              </p>
+            )}
+          </>
         ) : (
           <TaskList
             tasks={localTasks}
