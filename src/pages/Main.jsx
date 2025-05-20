@@ -309,6 +309,7 @@ const MainPage = () => {
             setLocalTasks((prev) =>
               prev.map((t) => (t.id === tempId ? { ...newTask, isTemp: false } : t)) // Explicitly set isTemp to false
             );
+            setNewTaskId(newTask.id); // <-- Add this line
             // Mark operation as complete
             setPendingOperations((prev) => {
               const updated = { ...prev };
@@ -654,6 +655,7 @@ const MainPage = () => {
               setLocalTasks((prev) =>
                 prev.map((t) => (t.id === tempId ? { ...newTask, isTemp: false } : t)) // Explicitly set isTemp to false
               );
+              setNewTaskId(newTask.id); // <-- Add this line
               // Mark operation as complete
               setPendingOperations((prev) => {
                 const updated = { ...prev };
