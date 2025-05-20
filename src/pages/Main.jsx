@@ -79,10 +79,16 @@ const MainPage = () => {
       setLocalTasks(prevLocalTasks => {
         const newLocalTasksMap = new Map();
 
-        // 1. Add all tasks from queryTasks to the map. These are server-authoritative.
-        //    Ensure isTemp is false for these.
+      // 1. Add all tasks from queryTasks to the map, UNLESS they are pending deletion.
+      //    These are server-authoritative. Ensure isTemp is false for these.
         queryTasks.forEach(serverTask => {
+        // Check if this task is currently pending deletion
+        const op = pendingOperations[serverTask.id];
+        const isPendingDelete = op?.type === 'delete' && op?.status === 'pending';
+
+        if (!isPendingDelete) { // Only add/update if not pending delete
           newLocalTasksMap.set(serverTask.id, { ...serverTask, isTemp: false });
+        }
         });
 
         // 2. Add or update tasks from prevLocalTasks.
