@@ -75,16 +75,72 @@ const MainPage = () => {
 
   // Sync local tasks with query results when they change
   useEffect(() => {
-    if (queryTasks.length > 0) {
-      setLocalTasks(queryTasks);
-      // Hide skeleton loaders after data is loaded
+    if (queryTasks) { // queryTasks is the new list from the server
+      setLocalTasks(prevLocalTasks => {
+        const newLocalTasksMap = new Map();
+
+        // 1. Add all tasks from queryTasks to the map. These are server-authoritative.
+        //    Ensure isTemp is false for these.
+        queryTasks.forEach(serverTask => {
+          newLocalTasksMap.set(serverTask.id, { ...serverTask, isTemp: false });
+        });
+
+        // 2. Add or update tasks from prevLocalTasks.
+        prevLocalTasks.forEach(prevTask => {
+          if (prevTask.isTemp) {
+            // If it's a temporary task and not yet confirmed by being in queryTasks (via its final ID), keep it.
+            // The `onSuccess` of create will replace its temp ID with final ID in local state.
+            // If its final ID is already in newLocalTasksMap, it means it was in queryTasks, so we don't add the temp version.
+            if (!newLocalTasksMap.has(prevTask.id)) { // This check assumes prevTask.id is the *final* ID if confirmed.
+                                                   // If prevTask.id is still a temp ID, this is fine.
+               newLocalTasksMap.set(prevTask.id, prevTask);
+            }
+          } else {
+            // It's a previously confirmed task from prevLocalTasks (isTemp is false).
+            // It's a previously confirmed task from prevLocalTasks (isTemp is false).
+            // If it's NOT in the current queryTasks (meaning queryTasks is stale for this item),
+            // we should keep the version from prevLocalTasks to prevent it from disappearing.
+            if (!newLocalTasksMap.has(prevTask.id)) {
+              newLocalTasksMap.set(prevTask.id, prevTask);
+            }
+            // If it IS in newLocalTasksMap (i.e., it was in queryTasks), it has already been updated/added with server data.
+          }
+        });
+
+        const mergedTasks = Array.from(newLocalTasksMap.values());
+
+        mergedTasks.sort((a, b) => {
+          if (a.isTemp && !b.isTemp) return -1;
+          if (!a.isTemp && b.isTemp) return 1;
+          // If both are temp or both are not temp, sort by position.
+          // For temp tasks, they might not have a server position; they are usually prepended.
+          // Let's assume temp tasks don't have 'position' or it's 0.
+          if (a.isTemp && b.isTemp) {
+              // Potentially sort temp tasks by creation time if available, or maintain current relative order.
+              // For now, relative order is fine as they are taken from a Map.
+              return 0; 
+          }
+          return (a.position ?? Infinity) - (b.position ?? Infinity);
+        });
+
+        return mergedTasks;
+      });
+
       setShowSkeletons(false);
-      setShowBootingMessage(false); // Hide booting message when data loads
+      setShowBootingMessage(false);
+      if (bootingMessageTimeoutRef.current) {
+        clearTimeout(bootingMessageTimeoutRef.current);
+      }
+    } else if (!isLoading && queryTasks && queryTasks.length === 0) {
+      // queryTasks is an empty array, and we are not loading. Clear all non-temp tasks.
+      setLocalTasks(prevLocalTasks => prevLocalTasks.filter(task => task.isTemp));
+      setShowSkeletons(false);
+      setShowBootingMessage(false);
       if (bootingMessageTimeoutRef.current) {
         clearTimeout(bootingMessageTimeoutRef.current);
       }
     }
-  }, [queryTasks]);
+  }, [queryTasks, isLoading]);
 
   // Simulate progressive loading with skeleton loaders
   useEffect(() => {
@@ -251,7 +307,7 @@ const MainPage = () => {
           onSuccess: (newTask) => {
             // Replace the temporary task with the real one without triggering animation again
             setLocalTasks((prev) =>
-              prev.map((t) => (t.id === tempId ? { ...newTask } : t))
+              prev.map((t) => (t.id === tempId ? { ...newTask, isTemp: false } : t)) // Explicitly set isTemp to false
             );
             // Mark operation as complete
             setPendingOperations((prev) => {
@@ -596,7 +652,7 @@ const MainPage = () => {
             onSuccess: (newTask) => {
               // Replace the temporary task with the real one without triggering animation again
               setLocalTasks((prev) =>
-                prev.map((t) => (t.id === tempId ? { ...newTask } : t))
+                prev.map((t) => (t.id === tempId ? { ...newTask, isTemp: false } : t)) // Explicitly set isTemp to false
               );
               // Mark operation as complete
               setPendingOperations((prev) => {
