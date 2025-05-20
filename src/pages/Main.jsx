@@ -114,13 +114,16 @@ const MainPage = () => {
 
           if (clientVersion) {
             // Task exists on client: merge server data into it, respecting optimistic updates.
-            mergedTask = { ...clientVersion, ...serverTask, isTemp: false };
+            mergedTask = { ...clientVersion, ...serverTask, isTemp: false }; // Server fields overwrite clientVersion by default
+
+            const pendingOp = pendingOperations[serverTask.id]; // Ensure pendingOp is fresh if it changed
 
             if (pendingOp?.type === 'toggle' && pendingOp?.status === 'pending') {
-              mergedTask.isDone = clientVersion.isDone; // Preserve optimistic isDone
+              // The true optimistic state is the inverse of the originalState stored in the pending op.
+              mergedTask.isDone = !pendingOp.originalState.isDone; 
             } else if (!pendingOp && clientVersion.isDone !== serverTask.isDone) {
-              // No pending toggle, but isDone differs. This implies toggle recently confirmed.
-              // Client's version (which is confirmed) is more up-to-date than stale serverTask.
+              // No pending toggle, but isDone differs. Client's confirmed state (already in clientVersion via smart onSuccess)
+              // or last optimistic state (if no onSuccess yet) should be preferred over stale server.
               mergedTask.isDone = clientVersion.isDone;
             }
           } else {
@@ -403,31 +406,66 @@ const MainPage = () => {
         id: `toggle-${task.id}`,
         batch: true, // We can batch toggle operations
         priority: 3, // Medium priority
-        onSuccess: () => {
-          // Mark operation as complete
-          setPendingOperations((prev) => {
-            const updated = { ...prev };
-            delete updated[task.id];
-            return updated;
+        onSuccess: (updatedTaskFromServer) => {
+          // Update localTasks with the confirmed state from the server.
+          setLocalTasks(prevLocalTasks => {
+            return prevLocalTasks.map(t =>
+              t.id === updatedTaskFromServer.id
+                ? { ...updatedTaskFromServer, isTemp: false } // Ensure isTemp is false
+                : t
+            );
+          });
+
+          // Now, manage pendingOperations carefully.
+          setPendingOperations(prevPendingOps => {
+            const currentPendingOp = prevPendingOps[updatedTaskFromServer.id];
+
+            if (currentPendingOp && currentPendingOp.type === 'toggle') {
+              if (currentPendingOp.originalState.isDone === !updatedTaskFromServer.isDone) {
+                const newPendingOps = { ...prevPendingOps };
+                delete newPendingOps[updatedTaskFromServer.id];
+                return newPendingOps;
+              }
+            }
+            return prevPendingOps;
           });
         },
-        onError: (error) => {
-          // Revert the optimistic update
-          setLocalTasks(localTasks.map((t) => (t.id === task.id ? task : t)));
+        onError: (error) => { // The 'task' variable from handleToggleTask's closure is the original state for THIS operation.
+          // Revert localTasks to the state before THIS specific toggle attempt.
+          setLocalTasks(prevLocalTasks => {
+            return prevLocalTasks.map(t =>
+              t.id === task.id ? { ...task } : t // Revert to the 'task' from closure
+            );
+          });
 
-          // Mark operation as failed
-          setPendingOperations((prev) => ({
-            ...prev,
-            [task.id]: {
-              type: "toggle",
-              status: "failed",
-              error,
-              originalState: task,
-            },
-          }));
+          // Mark the operation as failed in pendingOperations, but only if the current
+          // pending operation for this task.id is the one that actually failed.
+          setPendingOperations(prevPendingOps => {
+            const currentPendingOp = prevPendingOps[task.id];
 
+            // Check if the current pending operation is the one that this error belongs to.
+            // We identify this by comparing the originalState stored in the pending operation
+            // with the 'task' object from the closure (which was the originalState for this failed operation).
+            if (currentPendingOp && 
+                currentPendingOp.type === 'toggle' &&
+                currentPendingOp.status === 'pending' && // Important: only act on still-pending ops
+                currentPendingOp.originalState.id === task.id &&
+                currentPendingOp.originalState.isDone === task.isDone) { // Compare all relevant fields of originalState if necessary
+              
+              const newPendingOps = { ...prevPendingOps };
+              newPendingOps[task.id] = {
+                ...currentPendingOp, // Preserve other potential fields like operationId if added
+                status: 'failed',
+                error: error, // Add the error object
+                // originalState is already correct in currentPendingOp
+              };
+              return newPendingOps;
+            }
+            // If there's no pending op, or it's for a different original state (meaning a newer toggle is pending),
+            // don't change pendingOps. This error might be for an operation that was already superseded.
+            return prevPendingOps;
+          });
           console.error("Error toggling task:", error);
-          // You could add a toast notification here
         },
       }
     );
