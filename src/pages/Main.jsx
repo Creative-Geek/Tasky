@@ -46,6 +46,8 @@ const MainPage = () => {
   // Track if notifications are hidden
   const [hideSyncNotification, setHideSyncNotification] = useState(false);
   const [hideErrorNotification, setHideErrorNotification] = useState(false);
+  // State for recently confirmed deleted task IDs to handle stale server responses
+  const [recentlyConfirmedDeletedIDs, setRecentlyConfirmedDeletedIDs] = useState(new Set()); // Ensure this line is present and correct
   // Track retry attempts
   const retryCount = useRef(0);
   // State for showing booting message
@@ -73,80 +75,119 @@ const MainPage = () => {
     };
   }, []);
 
-  // Sync local tasks with query results when they change
+  // Unified Merge Strategy useEffect
   useEffect(() => {
-    if (queryTasks) { // queryTasks is the new list from the server
+    if (queryTasks) {
       setLocalTasks(prevLocalTasks => {
-        const newLocalTasksMap = new Map();
+        const newTasksMap = new Map();
 
-      // 1. Add all tasks from queryTasks to the map, UNLESS they are pending deletion.
-      //    These are server-authoritative. Ensure isTemp is false for these.
-        queryTasks.forEach(serverTask => {
-        // Check if this task is currently pending deletion
-        const op = pendingOperations[serverTask.id];
-        const isPendingDelete = op?.type === 'delete' && op?.status === 'pending';
-
-        if (!isPendingDelete) { // Only add/update if not pending delete
-          newLocalTasksMap.set(serverTask.id, { ...serverTask, isTemp: false });
-        }
+        // 1. Initialize with tasks from prevLocalTasks, excluding those pending delete or recently confirmed deleted.
+        // This ensures optimistic updates for toggles and other properties are carried forward as a base.
+        prevLocalTasks.forEach(task => {
+          const op = pendingOperations[task.id];
+          if (op?.type === 'delete' && op?.status === 'pending') {
+            return; 
+          }
+          // If it was confirmed deleted, it should ideally not be in prevLocalTasks because
+          // optimistic delete would have removed it. If it's here due to an error rollback,
+          // recentlyConfirmedDeletedIDs check will prevent it from being re-added by stale queryTasks.
+          if (recentlyConfirmedDeletedIDs.has(task.id)) {
+              return;
+          }
+          newTasksMap.set(task.id, { ...task }); // Store a copy
         });
 
-        // 2. Add or update tasks from prevLocalTasks.
-        prevLocalTasks.forEach(prevTask => {
-          if (prevTask.isTemp) {
-            // If it's a temporary task and not yet confirmed by being in queryTasks (via its final ID), keep it.
-            // The `onSuccess` of create will replace its temp ID with final ID in local state.
-            // If its final ID is already in newLocalTasksMap, it means it was in queryTasks, so we don't add the temp version.
-            if (!newLocalTasksMap.has(prevTask.id)) { // This check assumes prevTask.id is the *final* ID if confirmed.
-                                                   // If prevTask.id is still a temp ID, this is fine.
-               newLocalTasksMap.set(prevTask.id, prevTask);
+        // 2. Process server tasks (queryTasks)
+        // Filter out tasks that client knows are definitely deleted or pending delete.
+        const filteredQueryTasks = queryTasks.filter(serverTask => {
+          if (recentlyConfirmedDeletedIDs.has(serverTask.id)) return false;
+          const op = pendingOperations[serverTask.id];
+          if (op?.type === 'delete' && op?.status === 'pending') return false;
+          return true;
+        });
+
+        filteredQueryTasks.forEach(serverTask => {
+          const clientVersion = newTasksMap.get(serverTask.id); // Version from prevLocalTasks (if it existed)
+          const pendingOp = pendingOperations[serverTask.id];
+
+          let mergedTask;
+
+          if (clientVersion) {
+            // Task exists on client: merge server data into it, respecting optimistic updates.
+            mergedTask = { ...clientVersion, ...serverTask, isTemp: false };
+
+            if (pendingOp?.type === 'toggle' && pendingOp?.status === 'pending') {
+              mergedTask.isDone = clientVersion.isDone; // Preserve optimistic isDone
+            } else if (!pendingOp && clientVersion.isDone !== serverTask.isDone) {
+              // No pending toggle, but isDone differs. This implies toggle recently confirmed.
+              // Client's version (which is confirmed) is more up-to-date than stale serverTask.
+              mergedTask.isDone = clientVersion.isDone;
             }
           } else {
-            // It's a previously confirmed task from prevLocalTasks (isTemp is false).
-            // It's a previously confirmed task from prevLocalTasks (isTemp is false).
-            // If it's NOT in the current queryTasks (meaning queryTasks is stale for this item),
-            // we should keep the version from prevLocalTasks to prevent it from disappearing.
-            if (!newLocalTasksMap.has(prevTask.id)) {
-              newLocalTasksMap.set(prevTask.id, prevTask);
-            }
-            // If it IS in newLocalTasksMap (i.e., it was in queryTasks), it has already been updated/added with server data.
+            // Task is new from server (not in our filtered prevLocalTasks map)
+            mergedTask = { ...serverTask, isTemp: false };
           }
+          newTasksMap.set(serverTask.id, mergedTask);
+        });
+        
+        // 3. Ensure any purely temporary tasks (not yet in queryTasks or newTasksMap) are included.
+        //    (The initial population from prevLocalTasks should cover temp tasks not pending delete).
+        //    If a temp task was added to newTasksMap and then updated by a (matching temp ID) queryTask, it's fine.
+        //    This step is more about ensuring temp tasks that had no corresponding queryTask entry are still there.
+        prevLocalTasks.forEach(prevTask => {
+            if (prevTask.isTemp && !newTasksMap.has(prevTask.id)) {
+                // And not pending delete (already checked when initially populating newTasksMap)
+                const op = pendingOperations[prevTask.id];
+                if (!(op?.type === 'delete' && op?.status === 'pending') && !recentlyConfirmedDeletedIDs.has(prevTask.id) ) {
+                     newTasksMap.set(prevTask.id, { ...prevTask });
+                }
+            }
         });
 
-        const mergedTasks = Array.from(newLocalTasksMap.values());
-
-        mergedTasks.sort((a, b) => {
+        const finalTasks = Array.from(newTasksMap.values());
+        finalTasks.sort((a, b) => {
           if (a.isTemp && !b.isTemp) return -1;
           if (!a.isTemp && b.isTemp) return 1;
-          // If both are temp or both are not temp, sort by position.
-          // For temp tasks, they might not have a server position; they are usually prepended.
-          // Let's assume temp tasks don't have 'position' or it's 0.
-          if (a.isTemp && b.isTemp) {
-              // Potentially sort temp tasks by creation time if available, or maintain current relative order.
-              // For now, relative order is fine as they are taken from a Map.
-              return 0; 
-          }
+          if (a.isTemp && b.isTemp) return 0;
           return (a.position ?? Infinity) - (b.position ?? Infinity);
         });
-
-        return mergedTasks;
+        return finalTasks;
       });
 
+      // 4. Maintain recentlyConfirmedDeletedIDs: remove IDs not in current queryTasks
+      const currentServerTaskIds = new Set(queryTasks.map(t => t.id));
+      setRecentlyConfirmedDeletedIDs(prevDeletedIDs => {
+        const newStillPotentiallyStaleIDs = new Set();
+        prevDeletedIDs.forEach(id => {
+          if (currentServerTaskIds.has(id)) {
+            // If server still sends this ID, it means our 'recently confirmed' was perhaps too soon
+            // or server is very stale. Keep it in the set to continue filtering it out from query.
+            newStillPotentiallyStaleIDs.add(id);
+          }
+          // If server no longer sends this ID, it means server has acknowledged deletion.
+          // So we can stop tracking it in recentlyConfirmedDeletedIDs.
+        });
+        return newStillPotentiallyStaleIDs;
+      });
+
+      // Hide skeleton loaders, etc.
       setShowSkeletons(false);
       setShowBootingMessage(false);
       if (bootingMessageTimeoutRef.current) {
         clearTimeout(bootingMessageTimeoutRef.current);
       }
+
     } else if (!isLoading && queryTasks && queryTasks.length === 0) {
-      // queryTasks is an empty array, and we are not loading. Clear all non-temp tasks.
-      setLocalTasks(prevLocalTasks => prevLocalTasks.filter(task => task.isTemp));
+      setLocalTasks(prevLocalTasks => prevLocalTasks.filter(task => task.isTemp)); // Only keep temp
       setShowSkeletons(false);
+      // ... (rest of the original else if block)
       setShowBootingMessage(false);
       if (bootingMessageTimeoutRef.current) {
         clearTimeout(bootingMessageTimeoutRef.current);
       }
+      setRecentlyConfirmedDeletedIDs(new Set()); // Clear if server sends empty list
     }
-  }, [queryTasks, isLoading]);
+  }, [queryTasks, isLoading, pendingOperations]); // pendingOperations is now a dependency
 
   // Simulate progressive loading with skeleton loaders
   useEffect(() => {
@@ -421,6 +462,7 @@ const MainPage = () => {
           delete updated[id];
           return updated;
         });
+        setRecentlyConfirmedDeletedIDs(prev => new Set(prev).add(id)); // <-- Add this line
       },
       onError: (error) => {
         // Revert the optimistic update
@@ -668,6 +710,9 @@ const MainPage = () => {
                 delete updated[tempId];
                 return updated;
               });
+              // Note: The line for setRecentlyConfirmedDeletedIDs was in handleAITasksGenerated in the previous read_file output.
+              // It should NOT be here for task CREATION. It's only for task DELETION.
+              // I am ensuring it's not incorrectly added here.
             },
             onError: (error) => {
               // Mark operation as failed
