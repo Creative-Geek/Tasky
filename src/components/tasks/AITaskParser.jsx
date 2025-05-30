@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useAction, parseTaskWithAI } from "wasp/client/operations";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ErrorAlert from "../common/ErrorAlert";
@@ -149,6 +149,12 @@ const AITaskParser = ({
     setEditedTasks(updatedTasks);
   };
 
+  // Handle task deletion
+  const handleDeleteTask = (index) => {
+    const updatedTasks = editedTasks.filter((_, i) => i !== index);
+    setEditedTasks(updatedTasks);
+  };
+
   // Handle save button click
   const handleSave = () => {
     // Filter out tasks with empty titles
@@ -244,7 +250,14 @@ const AITaskParser = ({
             <h3 className="text-lg font-medium mb-3">Generated Tasks</h3>
             <div className="space-y-4">
               {editedTasks.map((task, index) => (
-                <div key={index} className="card p-4 border">
+                <div key={index} className="card p-4 border relative">
+                  <button
+                    onClick={() => handleDeleteTask(index)}
+                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    aria-label="Delete task"
+                  >
+                    <TrashIcon className="h-5 w-5 text-red-500" />
+                  </button>
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <label className="block text-sm font-medium">
