@@ -1,6 +1,13 @@
+<div align="center">
+
 # Tasky
 
 A simple yet effective task management application built with the Wasp full-stack framework.
+
+</div>
+
+![image](https://github.com/user-attachments/assets/207c11e3-9bdc-4a1f-bbb6-aa310eec7c6a)
+
 
 ## Features
 
@@ -83,6 +90,8 @@ A simple yet effective task management application built with the Wasp full-stac
     Open your web browser and navigate to `http://localhost:3000` (or the port specified by Wasp if different).
 
 ## Deployment
+
+![image](https://github.com/user-attachments/assets/88846ce3-f810-4a83-ab00-d6df3d905ca6)
 
 The project includes an `update_project.sh` script for building and deploying both the backend and frontend:
 
